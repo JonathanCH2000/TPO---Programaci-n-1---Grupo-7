@@ -1,12 +1,5 @@
-# Letra, nombre, celdas y cantidad.
-CATALOGO = [
-    ("F", "Fragata", 2, 3),
-    ("D", "Destructor", 3, 2),
-    ("S", "Submarino", 3, 2),
-    ("C", "Crucero", 4, 1),
-    ("P", "Portaaviones", 5, 1),
-    ("E", "Estacion orbital", 8, 1)
-]
+
+#Funciones
 def crear_flota():
     """Devuelve una lista vacia para guardar las naves ubicadas."""
     return []
@@ -72,9 +65,45 @@ def obtener_puntos(tipo, desde, hasta):
 
 def ubicar_nave(cubo, flota, tipo, desde, hasta): # a completar
     """cubo, flota, nave, punto desde, punto hasta → cubo y flota actualizados, o excepción."""
-    return cubo, flota
+    #if tipo == "F":
+        
+    #return cubo, flota
 
 
 def ubicacion_automatica():
     """cubo, catálogo, semilla → flota ubicada."""
-    pass
+    #pass
+
+
+#Funcion para ubicar las naves (separar por tipo de nave)
+def ubicar_flota_manual ():
+    flota = [["F",3],["D",2],["S",2],["C",1],["P",1],["E",1]]
+    naves_pendientes = 10
+    while naves_pendientes > 0:
+        #Texto de pendientes: 
+        texto_pendientes = "Pendientes: "
+        for nave in flota:
+            letra = nave[0]
+            cantidad = nave [1]
+            if cantidad > 0:
+                texto_pendientes += f"{letra} x{cantidad}"
+        print(texto_pendientes)
+         
+    
+       
+    
+
+       
+# Letra, nombre, celdas y cantidad.
+CATALOGO = [
+    ("F", "Fragata", 2, 3),
+    ("D", "Destructor", 3, 2),
+    ("S", "Submarino", 3, 2),
+    ("C", "Crucero", 4, 1),
+    ("P", "Portaaviones", 5, 1),
+    ("E", "Estacion orbital", [[[1,1]],[[1,1]]], 1)
+]
+
+
+
+
