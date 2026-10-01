@@ -1,3 +1,4 @@
+import random
 
 #Funciones
 def crear_flota():
@@ -70,30 +71,55 @@ def ubicar_nave(cubo, flota, tipo, desde, hasta): # a completar
     #return cubo, flota
 
 
+def menu_ubicacion_flota(numero):
+    if numero == 1:
+            jugador1 = input("Ingresar el nombre del jugador 1: ")
+            print("--- Flota de",jugador1,"---\n 1 - Ubicacion manual\n 2 - Ubicacio automatica \n")
+            opcion = input("Elegir una opción: ")
+            if opcion == "1":
+                ubicar_flota_manual(flota)
+
+            if opcion == "2":
+                ubicacion_automatica () 
+
+
 def ubicacion_automatica():
     """cubo, catálogo, semilla → flota ubicada."""
-    #pass
+
+    pass
+
+def ubicar_flota_manual (flota):
+    ocupados = set()
+
+    while sum(flota.values()) > 0:
+        impresion_pendientes(flota)
+        letra = input("Nave (F/D/S/C/P/E): ").upper()
+        ubicacion = input("Desde - Hasta [Plano(z),Coordenadas (x),(y)) - (Plano(z),Coordenadas (x),(y)] : ")
+        z, x, y = ubicacion.split("-")
+
+              
+        while sum(flota.values()) > 0:      
+            if flota.get(letra,0) > 0:
+                flota[letra] -= 1
+                print("Ubicada.")
+            else:
+                print("Esa nave no existe o ya no quedan pendientes.")
 
 
-#Funcion para ubicar las naves (separar por tipo de nave)
-def ubicar_flota_manual ():
-    flota = [["F",3],["D",2],["S",2],["C",1],["P",1],["E",1]]
-    naves_pendientes = 10
-    while naves_pendientes > 0:
-        #Texto de pendientes: 
-        texto_pendientes = "Pendientes: "
-        for nave in flota:
-            letra = nave[0]
-            cantidad = nave [1]
-            if cantidad > 0:
-                texto_pendientes += f"{letra} x{cantidad}"
-        print(texto_pendientes)
-         
+
+    pass
+
+
+def impresion_pendientes(flota):
+    """Imprime las naves pendientes de ubicación."""
+   
+    texto_pendientes = "Pendientes: "
+    for letra, cantidad in flota.items():
+        if cantidad > 0:
+            texto_pendientes += f"{letra} x{cantidad} "
+    print(texto_pendientes)
+          
     
-       
-    
-
-       
 # Letra, nombre, celdas y cantidad.
 CATALOGO = [
     ("F", "Fragata", 2, 3),
@@ -103,6 +129,9 @@ CATALOGO = [
     ("P", "Portaaviones", 5, 1),
     ("E", "Estacion orbital", [[[1,1]],[[1,1]]], 1)
 ]
+
+
+flota = {"F": 3,"D": 2,"S": 2,"C": 1,"P": 1,"E": 1}
 
 
 
