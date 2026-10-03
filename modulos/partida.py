@@ -158,15 +158,11 @@ def menu_interactivo():
         match opcion:
             case 1:
                 nueva_partida_1v1()
-                break
             case 2:
                 nueva_partida_vs_maquina()
-                break
             case 3:
                 nueva_partida_maquina_vs_maquina()
-                break
             case 4:
                 continuar_partida()
-                break
             case 5:
                 break
