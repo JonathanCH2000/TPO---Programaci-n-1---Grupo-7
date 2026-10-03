@@ -1,8 +1,14 @@
 import re
 
-from tablero import crear_cubo, dibujar_capa
-from flota import CATALOGO, crear_flota, datos_nave
-from flota import cantidad_ubicada, ubicar_nave, ubicacion_automatica
+from modulos.flota import (
+    CATALOGO,
+    cantidad_ubicada,
+    crear_flota,
+    datos_nave,
+    ubicacion_automatica,
+    ubicar_nave,
+)
+from modulos.tablero import crear_cubo, dibujar_capa
 
 
 def pedir_opcion(maximo):
@@ -60,9 +66,7 @@ def preparar_jugador(numero, tamano):
                 print("--- Naves pendientes ---")
 
                 for datos in CATALOGO:
-                    faltan = datos[3] - cantidad_ubicada(
-                        flota, datos[0]
-                    )
+                    faltan = datos[3] - cantidad_ubicada(flota, datos[0])
                     print(datos[0], "-", datos[1], "x", faltan)
 
                 tipo = input("Nave: ").strip().upper()
@@ -71,22 +75,22 @@ def preparar_jugador(numero, tamano):
                     print("Nave invalida.")
                 else:
                     desde, hasta = pedir_tramo()
-                    resultado = ubicar_nave(
-                        cubo, flota, tipo, desde, hasta
-                    )
+                    resultado = ubicar_nave(cubo, flota, tipo, desde, hasta)
 
                     if resultado is None:
                         print("No se puede ubicar ahi.")
                     else:
                         print("Nave ubicada.")
         case 2:
+            # FIX: Esta funcion no espera ningun parametro, arreglar
             flota = ubicacion_automatica(cubo)
 
             while flota is None:
                 cubo = crear_cubo(tamano)
+                # FIX: Esta funcion no espera ningun parametro, arreglar
                 flota = ubicacion_automatica(cubo)
 
-
+    # FIX: Esto nunca se llama, de momento no se ubica ninguna flota
     print("Capa que quiere ver:")
     capa = pedir_opcion(len(cubo))
     print(dibujar_capa(cubo, capa, True))
@@ -96,38 +100,51 @@ def preparar_jugador(numero, tamano):
 
 def nueva_partida_1v1(configuracion=8):
     """Recibe el tamano; devuelve el estado inicial de dos jugadores."""
-    #Mientras para probar el sub menu y ver el dibujo del estado
+    # Mientras para probar el sub menu y ver el dibujo del estado
     jugador_uno = preparar_jugador(1, configuracion)
     jugador_dos = preparar_jugador(2, configuracion)
 
     return [jugador_uno, jugador_dos]
 
 
-
 def nueva_partida_vs_maquina():
-    """configuración, dificultad → estado inicial de una partida contra la máquina."""
+    """Configuración, dificultad → estado inicial de una partida contra la máquina."""
+    print("Todavia no esta implementado")
     pass
 
 
 def nueva_partida_maquina_vs_maquina():
-    """configuración, dificultades → estado inicial de una partida entre dos máquinas."""
+    """Configuración, dificultades → estado inicial de una partida entre dos máquinas."""
+    print("Todavia no esta implementado")
+    pass
 
 
 def ejecutar_turno():
     """estado, jugada → estado actualizado."""
+    print("Todavia no esta implementado")
     pass
 
 
 def turno_maquina():
-    """estado → estado actualizado, jugado por la máquina."""
+    """Estado → estado actualizado, jugado por la máquina."""
+    print("Todavia no esta implementado")
     pass
 
 
 def hay_ganador():
-    """estado → ganador, o ninguno."""
+    """Estado → ganador, o ninguno."""
+    print("Todavia no esta implementado")
     pass
 
-def main():
+
+def continuar_partida():
+    """Sigue una partida previa."""
+    # NOTE: No se si esto va aca? Lo pongo porque ya estaba para que no se rompa el codigo
+    print("Todavia no esta implementado")
+    pass
+
+
+def menu_interactivo():
     """Muestra el menu principal hasta que se elige salir."""
     while True:
         print("===== OPERACION CUBO =====")
@@ -141,15 +158,15 @@ def main():
         match opcion:
             case 1:
                 nueva_partida_1v1()
+                break
             case 2:
                 nueva_partida_vs_maquina()
+                break
             case 3:
                 nueva_partida_maquina_vs_maquina()
+                break
             case 4:
                 continuar_partida()
+                break
             case 5:
                 break
-
-
-if __name__ == "__main__":
-    main()
