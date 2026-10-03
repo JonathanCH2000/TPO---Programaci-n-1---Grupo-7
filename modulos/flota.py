@@ -36,6 +36,10 @@ def ubicar_nave(
         if not punto_valido(cubo, punto):
             return None
 
+        # La nave no cumple la restriccion de ubicacion de su tipo.
+        if not _cumple_restriccion(cubo, tipo, punto):
+            return None
+
         # La celda ya esta ocupada por otra nave.
         if leer_celda(cubo, punto) != AGUA:
             return None
@@ -151,3 +155,30 @@ def _hay_nave_cerca(cubo: list, punto: tuple) -> bool:
                     return True
 
     return False
+
+
+def _cumple_restriccion(cubo: list, tipo: str, punto: tuple) -> bool:
+    """Indica si el punto respeta la restriccion de ubicacion del tipo de nave."""
+    z = punto[0]
+    n = len(cubo)
+    mitad = n // 2
+
+    # Submarino: solo en la mitad inferior de z.
+    if tipo == "S" and z > mitad:
+        return False
+
+    # Crucero: no puede ocupar z = 1 ni z = N.
+    if tipo == "C" and (z == 1 or z == n):
+        return False
+
+    # Portaaviones: solo en la mitad superior de z.
+    if tipo == "P" and z <= mitad:
+        return False
+
+    # Estacion orbital: no puede tocar ninguna cara exterior del cubo.
+    if tipo == "E":
+        for valor in punto:
+            if valor == 1 or valor == n:
+                return False
+
+    return True
