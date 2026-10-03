@@ -45,6 +45,23 @@ def pedir_tramo():
         print("Ejemplo: 3,5,4-3,5,5")
 
 
+def ver_cubo(cubo):
+    """Muestra las capas del cubo que elija el jugador hasta que decida continuar."""
+    while True:
+        # Pedir la capa de z a dibujar.
+        print(f"Capa que quiere ver (1 a: {len(cubo)}):")
+        capa = pedir_opcion(len(cubo))
+
+        # Dibujar la capa mostrando las naves propias.
+        print(dibujar_capa(cubo, capa, True))
+
+        # Preguntar si quiere ver otra capa o seguir.
+        print("1 - Ver otra capa")
+        print("2 - Continuar")
+        if pedir_opcion(2) == 2:
+            return
+
+
 def preparar_jugador(numero, tamano):
     """Recibe numero y tamano; devuelve cubo, flota e historial."""
     cubo = crear_cubo(tamano)
@@ -91,9 +108,8 @@ def preparar_jugador(numero, tamano):
 
             print("Flota ubicada.")
 
-    print("Capa que quiere ver:")
-    capa = pedir_opcion(len(cubo))
-    print(dibujar_capa(cubo, capa, True))
+    # Le pregunta al usuario si quiere ver varias capas o seguir.
+    ver_cubo(cubo)
 
     return [cubo, flota]
 
