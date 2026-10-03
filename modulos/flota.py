@@ -1,3 +1,5 @@
+import random
+
 from modulos.tablero import AGUA, NAVE, escribir_celda, leer_celda, punto_valido
 
 CATALOGO = [
@@ -58,10 +60,44 @@ def ubicar_nave(
     return cubo, flota
 
 
-def ubicacion_automatica():
-    """Cubo, catálogo, semilla → flota ubicada."""
-    # TODO:
-    pass
+def ubicacion_automatica(
+    cubo: list, catalogo: list, semilla: int | None
+) -> list[tuple[str, list[tuple[int, int, int]]]] | None:
+    """Ubica al azar todas las naves del catalogo respetando las reglas y devuelve la flota."""
+    # Con la misma semilla siempre sale la misma flota. Con None sale una distinta cada vez.
+    random.seed(semilla)
+
+    # Empezar con la flota vacia.
+    flota = crear_flota()
+    lado = len(cubo)
+
+    # Recorrer cada tipo de nave del catalogo.
+    for modelo_nave in catalogo:
+        tipo = modelo_nave[0]
+        intentos = 0
+
+        # Repetir hasta ubicar todas las naves de este tipo.
+        while cantidad_ubicada(flota, tipo) < modelo_nave[3]:
+            # Si despues de muchos intentos no entra, el cubo ya no tiene lugar.
+            if intentos == 1000:
+                return None
+
+            intentos += 1
+
+            # Elegir un punto al azar dentro del cubo.
+            desde = (
+                random.randint(1, lado),
+                random.randint(1, lado),
+                random.randint(1, lado),
+            )
+
+            # Calcular donde termina la nave.
+            hasta = _extremo_al_azar(modelo_nave, desde)
+
+            # Intentar ubicarla. Si no cumple las reglas, no se agrega y se prueba otro punto.
+            ubicar_nave(cubo, flota, tipo, desde, hasta)
+
+    return flota
 
 
 def crear_flota() -> list:
@@ -182,3 +218,21 @@ def _cumple_restriccion(cubo: list, tipo: str, punto: tuple) -> bool:
                 return False
 
     return True
+
+
+def _extremo_al_azar(modelo_nave: tuple, desde: tuple) -> tuple[int, int, int]:
+    """Calcula el otro extremo de la nave a partir de desde, en un eje al azar."""
+    # La estacion orbital es un bloque de 2x2x2: el extremo es la esquina opuesta.
+    if modelo_nave[0] == "E":
+        return (desde[0] + 1, desde[1] + 1, desde[2] + 1)
+
+    # Elegir al azar en que eje va la nave (0 = z, 1 = x, 2 = y).
+    eje = random.randint(0, 2)
+
+    # Copiar el punto inicial.
+    hasta = [desde[0], desde[1], desde[2]]
+
+    # Avanzar en ese eje el largo de la nave menos 1 (la celda inicial ya cuenta).
+    hasta[eje] = hasta[eje] + modelo_nave[2] - 1
+
+    return (hasta[0], hasta[1], hasta[2])
