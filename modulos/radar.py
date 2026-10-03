@@ -1,6 +1,6 @@
 import time
 
-from tablero import leer_celda
+from modulos.tablero import leer_celda
 
 
 def armar_metricas(comparaciones, inicio):

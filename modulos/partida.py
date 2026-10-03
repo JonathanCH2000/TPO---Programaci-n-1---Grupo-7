@@ -82,15 +82,15 @@ def preparar_jugador(numero, tamano):
                     else:
                         print("Nave ubicada.")
         case 2:
-            # FIX: Esta funcion no espera ningun parametro, arreglar
-            flota = ubicacion_automatica(cubo)
+            flota = ubicacion_automatica(cubo, CATALOGO, None)
 
+            # Si no entro toda la flota, empezar de nuevo con un cubo vacio.
             while flota is None:
                 cubo = crear_cubo(tamano)
-                # FIX: Esta funcion no espera ningun parametro, arreglar
-                flota = ubicacion_automatica(cubo)
+                flota = ubicacion_automatica(cubo, CATALOGO, None)
 
-    # FIX: Esto nunca se llama, de momento no se ubica ninguna flota
+            print("Flota ubicada.")
+
     print("Capa que quiere ver:")
     capa = pedir_opcion(len(cubo))
     print(dibujar_capa(cubo, capa, True))

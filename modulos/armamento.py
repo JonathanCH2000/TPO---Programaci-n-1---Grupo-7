@@ -1,6 +1,12 @@
-from tablero import AGUA, NAVE, AGUA_MARCADA, IMPACTO
-from tablero import punto_valido, leer_celda, escribir_celda
-
+from modulos.tablero import (
+    AGUA,
+    AGUA_MARCADA,
+    IMPACTO,
+    NAVE,
+    escribir_celda,
+    leer_celda,
+    punto_valido,
+)
 
 # Letra, nombre y municion inicial.
 CATALOGO_ARMAS = [
@@ -10,7 +16,7 @@ CATALOGO_ARMAS = [
     ("S", "Sonar", 4),
     ("L", "Barrido laser", 2),
     ("O", "Onda expansiva", 1),
-    ("G", "Torpedo guiado", 1)
+    ("G", "Torpedo guiado", 1),
 ]
 
 
