@@ -15,6 +15,22 @@ def crear_flota() -> list:
     return []
 
 
+def _hay_nave_cerca(cubo: list, punto: tuple) -> bool:
+    """Indica si hay alguna nave en el punto o en las celdas que lo rodean."""
+    z, x, y = punto
+
+    # Recorrer el punto y las 26 celdas que lo rodean, incluidas las diagonales.
+    for paso_z in (-1, 0, 1):
+        for paso_x in (-1, 0, 1):
+            for paso_y in (-1, 0, 1):
+                vecino = (z + paso_z, x + paso_x, y + paso_y)
+
+                if punto_valido(cubo, vecino) and leer_celda(cubo, vecino) == NAVE:
+                    return True
+
+    return False
+
+
 def datos_nave(tipo: str) -> tuple[str, str, int, int] | None:
     """Obtiene el tipo de nave junto a sus datos."""
     for modelo_nave in CATALOGO:
@@ -115,6 +131,10 @@ def ubicar_nave(
 
         # La celda ya esta ocupada por otra nave.
         if leer_celda(cubo, punto) != AGUA:
+            return None
+
+        # Tiene que quedar al menos una celda libre con las otras naves.
+        if _hay_nave_cerca(cubo, punto):
             return None
 
     for punto in puntos:
