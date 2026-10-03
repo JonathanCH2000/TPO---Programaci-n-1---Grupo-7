@@ -1,3 +1,15 @@
+from modulos.tablero import AGUA, NAVE, escribir_celda, leer_celda, punto_valido
+
+CATALOGO = [
+    ("F", "Fragata", 2, 3),
+    ("D", "Destructor", 3, 2),
+    ("S", "Submarino", 3, 2),
+    ("C", "Crucero", 4, 1),
+    ("P", "Portaaviones", 5, 1),
+    ("E", "Estacion orbital", 8, 1),
+]
+
+
 def crear_flota():
     """Devuelve una lista vacia para guardar las naves ubicadas."""
     return []
