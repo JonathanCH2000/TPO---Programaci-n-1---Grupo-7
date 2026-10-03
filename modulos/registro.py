@@ -35,16 +35,19 @@ def ultima_jugada(historial: list) -> dict | None:
     return historial[-1]
 
 
-def guardar_partida():
+def guardar_partida(estado: dict, nombre: str) -> None:
     """estado, nombre → archivo escrito."""
-    pass
+    # TODO: se implementa en otra entrega.
+    return None
 
 
-def cargar_partida():
+def cargar_partida(nombre: str) -> dict:
     """nombre → estado, o excepción."""
-    pass
+    # TODO: se implementa en otra entrega.
+    return {}
 
 
-def listar_partidas():
+def listar_partidas() -> list[str]:
     """→ nombres de las partidas guardadas."""
-    pass
+    # TODO: se implementa en otra entrega.
+    return []

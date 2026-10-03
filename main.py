@@ -1,7 +1,7 @@
 from modulos.partida import menu_interactivo
 
 
-def main():
+def main() -> None:
     """Punto de partida del juego."""
     menu_interactivo()
 
