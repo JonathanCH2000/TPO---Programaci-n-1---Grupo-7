@@ -10,25 +10,59 @@ CATALOGO = [
 ]
 
 
+def ubicar_nave(
+    cubo: list, flota: list, tipo: str, desde: tuple, hasta: tuple
+) -> tuple[list, list] | None:
+    """Marcar nave en el cubo, agregar nave a la flota y devolver una tupla(cubo, flota)."""
+    modelo_nave = datos_nave(tipo)
+
+    # La nave no se encuentra en el catalogo.
+    if modelo_nave is None:
+        return None
+
+    # No quedan naves del tipo seleccionado para ubicar.
+    if cantidad_ubicada(flota, tipo) >= modelo_nave[3]:
+        return None
+
+    # Queda al menos 1 nave del tipo seleccionado para ubicar.
+    puntos = _obtener_puntos(tipo, desde, hasta)
+
+    # El tramo no tiene la forma o el largo de la nave.
+    if puntos is None:
+        return None
+
+    for punto in puntos:
+        # La nave se sale del cubo.
+        if not punto_valido(cubo, punto):
+            return None
+
+        # La celda ya esta ocupada por otra nave.
+        if leer_celda(cubo, punto) != AGUA:
+            return None
+
+        # Tiene que quedar al menos una celda libre con las otras naves.
+        if _hay_nave_cerca(cubo, punto):
+            return None
+
+    for punto in puntos:
+        # Escribir sobre las celdas correspondientes la ubicacion de la nave.
+        escribir_celda(cubo, punto, NAVE)
+
+    # Agregar a la flota una tupla con (tipo de nave, puntos validos seleccionados)
+    flota.append((tipo, puntos))
+
+    return cubo, flota
+
+
+def ubicacion_automatica():
+    """Cubo, catálogo, semilla → flota ubicada."""
+    # TODO:
+    pass
+
+
 def crear_flota() -> list:
     """Devuelve una lista vacia para guardar las naves ubicadas."""
     return []
-
-
-def _hay_nave_cerca(cubo: list, punto: tuple) -> bool:
-    """Indica si hay alguna nave en el punto o en las celdas que lo rodean."""
-    z, x, y = punto
-
-    # Recorrer el punto y las 26 celdas que lo rodean, incluidas las diagonales.
-    for paso_z in (-1, 0, 1):
-        for paso_x in (-1, 0, 1):
-            for paso_y in (-1, 0, 1):
-                vecino = (z + paso_z, x + paso_x, y + paso_y)
-
-                if punto_valido(cubo, vecino) and leer_celda(cubo, vecino) == NAVE:
-                    return True
-
-    return False
 
 
 def datos_nave(tipo: str) -> tuple[str, str, int, int] | None:
@@ -103,51 +137,17 @@ def _obtener_puntos(
     return puntos
 
 
-def ubicar_nave(
-    cubo: list, flota: list, tipo: str, desde: tuple, hasta: tuple
-) -> tuple[list, list] | None:
-    """Marcar nave en el cubo, agregar nave a la flota y devolver una tupla(cubo, flota)."""
-    modelo_nave = datos_nave(tipo)
+def _hay_nave_cerca(cubo: list, punto: tuple) -> bool:
+    """Indica si hay alguna nave en el punto o en las celdas que lo rodean."""
+    z, x, y = punto
 
-    # La nave no se encuentra en el catalogo.
-    if modelo_nave is None:
-        return None
+    # Recorrer el punto y las 26 celdas que lo rodean, incluidas las diagonales.
+    for paso_z in (-1, 0, 1):
+        for paso_x in (-1, 0, 1):
+            for paso_y in (-1, 0, 1):
+                vecino = (z + paso_z, x + paso_x, y + paso_y)
 
-    # No quedan naves del tipo seleccionado para ubicar.
-    if cantidad_ubicada(flota, tipo) >= modelo_nave[3]:
-        return None
+                if punto_valido(cubo, vecino) and leer_celda(cubo, vecino) == NAVE:
+                    return True
 
-    # Queda al menos 1 nave del tipo seleccionado para ubicar.
-    puntos = _obtener_puntos(tipo, desde, hasta)
-
-    # El tramo no tiene la forma o el largo de la nave.
-    if puntos is None:
-        return None
-
-    for punto in puntos:
-        # La nave se sale del cubo.
-        if not punto_valido(cubo, punto):
-            return None
-
-        # La celda ya esta ocupada por otra nave.
-        if leer_celda(cubo, punto) != AGUA:
-            return None
-
-        # Tiene que quedar al menos una celda libre con las otras naves.
-        if _hay_nave_cerca(cubo, punto):
-            return None
-
-    for punto in puntos:
-        # Escribir sobre las celdas correspondientes la ubicacion de la nave.
-        escribir_celda(cubo, punto, NAVE)
-
-    # Agregar a la flota una tupla con (tipo de nave, puntos validos seleccionados)
-    flota.append((tipo, puntos))
-
-    return cubo, flota
-
-
-def ubicacion_automatica():
-    """Cubo, catálogo, semilla → flota ubicada."""
-    # TODO:
-    pass
+    return False
