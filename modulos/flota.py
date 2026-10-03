@@ -1,9 +1,10 @@
 import random
 
 #Funciones
-def crear_flota():
-    """Devuelve una lista vacia para guardar las naves ubicadas."""
-    return []
+#def crear_flota():  
+"""Devuelve una lista vacia para guardar las naves ubicadas."""
+
+    #return
 
 def datos_nave(tipo): #temporal para probar
     """Recibe la letra de una nave, devuelve sus datos o None."""
@@ -66,12 +67,13 @@ def obtener_puntos(tipo, desde, hasta):
 
 def ubicar_nave(cubo, flota, tipo, desde, hasta): # a completar
     """cubo, flota, nave, punto desde, punto hasta → cubo y flota actualizados, o excepción."""
-    #if tipo == "F":
+    if tipo == "F":
         
-    #return cubo, flota
+        return cubo, flota
 
 
 def menu_ubicacion_flota(numero):
+    """Menu de ubicación de la flota. Ubicacion manual o automática. """
     if numero == 1:
             jugador1 = input("Ingresar el nombre del jugador 1: ")
             print("--- Flota de",jugador1,"---\n 1 - Ubicacion manual\n 2 - Ubicacio automatica \n")
