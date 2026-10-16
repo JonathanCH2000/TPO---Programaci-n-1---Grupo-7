@@ -154,6 +154,32 @@ def dibujar_capa(cubo: list, z: int, mostrar_naves: bool = False) -> str | None:
     return _dibujar_plano(cubo[z - 1], f"CAPA z = {z}", "x", "y", mostrar_naves)
 
 
+def dibujar_plano_x(cubo: list, x: int, mostrar_naves: bool = False) -> str | None:
+    """Recibe cubo y x; devuelve el dibujo del plano en x."""
+    # Obtenemos el plano x.
+    plano = plano_x(cubo, x)
+
+    # El plano pedido no existe en el cubo.
+    if plano is None:
+        return None
+
+    # El plano x se guarda como [z][y]: z va en las columnas e y en las filas.
+    return _dibujar_plano(plano, f"PLANO x = {x}", "z", "y", mostrar_naves)
+
+
+def dibujar_plano_y(cubo: list, y: int, mostrar_naves: bool = False) -> str | None:
+    """Recibe cubo e y ; devuelve el dibujo del plano en y."""
+    # Obtenemos el plano x.
+    plano = plano_y(cubo, y)
+
+    # El plano pedido no existe en el cubo.
+    if plano is None:
+        return None
+
+    # El plano x se guarda como [z][x]: z va en las columnas y x en las filas.
+    return _dibujar_plano(plano, f"PLANO y = {y}", "z", "x", mostrar_naves)
+
+
 def _dibujar_plano(
     plano: list, titulo: str, eje_columnas: str, eje_filas: str, mostrar_naves: bool
 ) -> str:
