@@ -108,6 +108,21 @@ def puntos_vecinos(
     return vecinos
 
 
+def plano_x(cubo: list, x: int) -> list[list[int]] | None:
+    """Recibe cubo y x; devuelve el plano de ese x como matriz [z][y]."""
+    # El valor de x no existe en el cubo, planos de 1 a N.
+    if x < 1 or x > len(cubo):
+        return None
+
+    plano = []
+
+    # De cada capa de z, guardamos la fila x de cada una (hacemos una copia para evitar modificar la original).
+    for capa in cubo:
+        plano.append(list(capa[x - 1]))
+
+    return plano
+
+
 def dibujar_capa(cubo: list, z: int, mostrar_naves: bool = False) -> str | None:
     """Recibe cubo y z; devuelve el dibujo de esa capa."""
     # La capa pedida no existe en el cubo.
