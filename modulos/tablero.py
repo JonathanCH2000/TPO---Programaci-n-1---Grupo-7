@@ -123,6 +123,27 @@ def plano_x(cubo: list, x: int) -> list[list[int]] | None:
     return plano
 
 
+def plano_y(cubo: list, y: int) -> list[list[int]] | None:
+    """Recibe cubo e y; devuelve el plano de esa y como matriz [z][x]."""
+    # El valor de y no existe en el cubo, planos de 1 a N.
+    if y < 1 or y > len(cubo):
+        return None
+
+    plano = []
+
+    # Recorrer cada capa z.
+    for capa in cubo:
+        linea = []
+
+        # De cada fila de x, nos quedamos solo con la celda de y.
+        for fila in capa:
+            linea.append(fila[y - 1])
+
+        plano.append(linea)
+
+    return plano
+
+
 def dibujar_capa(cubo: list, z: int, mostrar_naves: bool = False) -> str | None:
     """Recibe cubo y z; devuelve el dibujo de esa capa."""
     # La capa pedida no existe en el cubo.
