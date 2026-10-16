@@ -1,6 +1,13 @@
 import random
 
-from modulos.tablero import AGUA, NAVE, escribir_celda, leer_celda, punto_valido
+from modulos.tablero import (
+    AGUA,
+    NAVE,
+    escribir_celda,
+    leer_celda,
+    punto_valido,
+    puntos_vecinos,
+)
 
 CATALOGO = [
     ("F", "Fragata", 2, 3),
@@ -179,16 +186,14 @@ def _obtener_puntos(
 
 def _hay_nave_cerca(cubo: list, punto: tuple) -> bool:
     """Indica si hay alguna nave en el punto o en las celdas que lo rodean."""
-    z, x, y = punto
+    # Verificamos si hay una nave en las coordenadas del parametro.
+    if leer_celda(cubo, punto) == NAVE:
+        return True
 
-    # Recorrer el punto y las 26 celdas que lo rodean, incluidas las diagonales.
-    for paso_z in (-1, 0, 1):
-        for paso_x in (-1, 0, 1):
-            for paso_y in (-1, 0, 1):
-                vecino = (z + paso_z, x + paso_x, y + paso_y)
-
-                if punto_valido(cubo, vecino) and leer_celda(cubo, vecino) == NAVE:
-                    return True
+    # Revisar las 26 celdas que lo rodean, incluidas las diagonales (no 27 porque arriba chequeamos (0,0,0))
+    for vecino in puntos_vecinos(cubo, punto, True):
+        if leer_celda(cubo, vecino) == NAVE:
+            return True
 
     return False
 
