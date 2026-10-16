@@ -76,6 +76,38 @@ def contar_celdas(cubo: list, estado: int) -> int:
     return cantidad
 
 
+def puntos_vecinos(
+    cubo: list, punto: tuple, diagonales: bool = False
+) -> list[tuple[int, int, int]]:
+    """Recibe cubo, punto y si se cuentan las diagonales; devuelve los puntos vecinos dentro del cubo."""
+    z, x, y = punto
+    vecinos = []
+
+    # Probar cada combinacion de pasos en z, x e y.
+    for paso_z in (-1, 0, 1):
+        for paso_x in (-1, 0, 1):
+            for paso_y in (-1, 0, 1):
+                # Contar en cuantos ejes de movimiento hay para identificar las diagonales.
+                ejes_movidos = abs(paso_z) + abs(paso_x) + abs(paso_y)
+
+                # Sin moverse en ningun eje es el mismo punto: no es vecino, ignorar.
+                if ejes_movidos == 0:
+                    continue
+
+                # Sin diagonales solo valen los que se mueven en un unico eje, osea ejes_movidos == 1.
+                if not diagonales and ejes_movidos > 1:
+                    continue
+
+                # Calculamos el posible vecino, sumandole al parametro los 3 movimientos de los for loops.
+                vecino = (z + paso_z, x + paso_x, y + paso_y)
+
+                # Solo se agregan los vecinos validando que sus puntos sean correctos y no fuera del cubo.
+                if punto_valido(cubo, vecino):
+                    vecinos.append(vecino)
+
+    return vecinos
+
+
 def dibujar_capa(cubo: list, z: int, mostrar_naves: bool = False) -> str | None:
     """Recibe cubo y z; devuelve el dibujo de esa capa."""
     # La capa pedida no existe en el cubo.
