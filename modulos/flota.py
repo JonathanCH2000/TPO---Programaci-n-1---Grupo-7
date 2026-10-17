@@ -57,15 +57,16 @@ def ubicar_nave(
         # Escribir sobre las celdas correspondientes la ubicacion de la nave.
         escribir_celda(cubo, punto, NAVE)
 
-    # Agregar a la flota una tupla con (tipo de nave, puntos validos seleccionados)
-    flota.append((tipo, puntos))
+    # Agregar la nave a la flota: su tipo y el conjunto de puntos que ocupa.
+    nave = {"tipo": tipo, "puntos": set(puntos)}
+    flota.append(nave)
 
     return cubo, flota
 
 
 def ubicacion_automatica(
     cubo: list, catalogo: list, semilla: int | None
-) -> list[tuple[str, list[tuple[int, int, int]]]] | None:
+) -> list[dict] | None:
     """Ubica al azar todas las naves del catalogo respetando las reglas y devuelve la flota."""
     # Con la misma semilla siempre sale la misma flota. Con None sale una distinta cada vez.
     random.seed(semilla)
@@ -123,7 +124,7 @@ def cantidad_ubicada(flota: list, tipo: str) -> int:
     """Obtiene la cantidad de naves ubicadas del tipo seleccionado."""
     cantidad = 0
     for nave in flota:
-        if nave[0] == tipo:
+        if nave["tipo"] == tipo:
             cantidad += 1
     return cantidad
 
