@@ -81,6 +81,32 @@ def carga_profundidad(
     return resultados
 
 
+def barrido_laser(
+    cubo: list, flota: list, punto: tuple, eje: str
+) -> dict[tuple[int, int, int], str] | None:
+    """Recibe el cubo, la flota del rival, un punto y un eje ("x" o "y"); dispara a toda
+    la recta sobre ese eje que pasa por el punto. Devuelve un diccionario punto -> resultado."""
+    # Posicion de cada eje dentro del punto (z, x, y).
+    posiciones = {"x": 1, "y": 2}
+
+    # El punto esta fuera del cubo o el eje no es x ni y.
+    if not punto_valido(cubo, punto) or eje not in posiciones:
+        return None
+
+    posicion = posiciones[eje]
+    resultados = {}
+
+    # Recorrer el eje elegido de 1 a N, dejando fijos los otros dos valores del punto.
+    for valor in range(1, len(cubo) + 1):
+        celda = list(punto)
+        celda[posicion] = valor
+        celda = tuple(celda)
+
+        resultados[celda] = _disparar_celda(cubo, flota, celda)
+
+    return resultados
+
+
 def _disparar_celda(cubo: list, flota: list, punto: tuple) -> str:
     """Recibe el cubo, la flota del rival y un punto valido; dispara a esa celda
     y devuelve el resultado: "agua", "impacto", "hundido" o "repetido"."""
