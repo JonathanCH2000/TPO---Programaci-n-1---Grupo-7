@@ -1,6 +1,12 @@
 import time
 
-from modulos.tablero import leer_celda
+from modulos.tablero import (
+    DETECTADO,
+    NAVE,
+    escribir_celda,
+    leer_celda,
+    puntos_plano,
+)
 
 
 def busqueda_lineal(
@@ -27,6 +33,26 @@ def busqueda_lineal(
 
     # Se recorrio todo el cubo y ninguna celda tiene ese estado.
     return None, _armar_metricas(comparaciones, inicio)
+
+
+def sonar(cubo: list, eje: str, valor: int) -> list[tuple[int, int, int]] | None:
+    """Recibe el cubo del rival, un eje ("z", "x" o "y") y su valor; marca como detectadas
+    las celdas con nave de ese plano. Devuelve los puntos detectados."""
+    puntos = puntos_plano(cubo, eje, valor)
+
+    # El eje no existe o el valor esta fuera del cubo.
+    if puntos is None:
+        return None
+
+    detectados = []
+
+    # Revisar cada celda del plano: las que tienen una nave oculta pasan a detectadas.
+    for punto in puntos:
+        if leer_celda(cubo, punto) == NAVE:
+            escribir_celda(cubo, punto, DETECTADO)
+            detectados.append(punto)
+
+    return detectados
 
 
 def _armar_metricas(comparaciones: int, inicio: float) -> dict[str, int | float]:
