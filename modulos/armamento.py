@@ -1,10 +1,14 @@
-from modulos.flota import nave_hundida, registrar_impacto
+from modulos.flota import (
+    buscar_nave,
+    celda_destruida,
+    nave_hundida,
+    registrar_impacto,
+)
 from modulos.tablero import (
     AGUA,
     AGUA_MARCADA,
     HUNDIDO,
     IMPACTO,
-    NAVE,
     escribir_celda,
     leer_celda,
     punto_valido,
@@ -30,17 +34,19 @@ def torpedo(
     if not punto_valido(cubo, punto):
         return None
 
-    # Ver que hay en la celda apuntada.
+    # Ver que hay en la celda y si alguna nave la ocupa.
     estado = leer_celda(cubo, punto)
+    nave = buscar_nave(flota, punto)
 
-    # Habia una nave: se marca como impacto y se le suma el impacto a la nave.
-    if estado == NAVE:
+    # Hay una nave y esa celda todavia no esta destruida.
+    # El portaaviones aguanta dos impactos por celda: se marca como impacto y se le suma el impacto a la nave.
+    if nave is not None and not celda_destruida(nave, punto):
         escribir_celda(cubo, punto, IMPACTO)
-        nave = registrar_impacto(flota, punto)
+        registrar_impacto(flota, punto)
         resultado = "impacto"
 
         # Si con este impacto la nave quedo hundida, todas sus celdas pasan a hundido.
-        if nave and nave_hundida(nave):
+        if nave_hundida(nave):
             for punto_nave in nave["puntos"]:
                 escribir_celda(cubo, punto_nave, HUNDIDO)
             resultado = "hundido"
