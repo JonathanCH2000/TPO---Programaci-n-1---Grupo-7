@@ -1,0 +1,99 @@
+# Decisiones de diseño
+
+Registro de las decisiones que tomamos como grupo, con las alternativas que consideramos y por qué elegimos cada una.
+
+## Entrega 1
+
+### Mitad inferior y superior del cubo
+
+- **Decisión:** La mitad inferior son las capas de z = 1 a N // 2 y la superior, el resto (con N = 8: inferior z = 1 a 4, superior z = 5 a 8).
+- **Por qué:** La consigna no dice cómo partir el cubo. Con división entera la regla funciona para cualquier N; si N es impar, la capa del medio queda en la mitad superior.
+
+## Entrega 2
+
+### Excepciones propias en un módulo aparte (`errores.py`)
+
+- **Decisión:** Todas las excepciones heredan de una clase base `ErrorCubo` y viven en `modulos/errores.py`. Por ahora hay `ErrorUbicacion` y `ErrorMunicion`.
+- **Por qué un módulo aparte:** Las lanzan los módulos de dominio (`flota.py`, `armamento.py`) y las ataja el integrador (`partida.py`). Si estuvieran en `partida.py`, `flota.py` tendría que importar `partida.py`, que ya importa `flota.py` (evitamos importar de forma circular).
+- **Por qué una clase base:** El integrador puede atajar cualquier error del juego con un solo `except ErrorCubo`, sin conocer cada tipo.
+
+### `ubicar_nave` lanza una excepción en vez de devolver `None`
+
+- **Decisión:** Si la nave no se puede ubicar, lanza `ErrorUbicacion` con el motivo ("La nave se sale del cubo.", "La celda ya esta ocupada por otra nave.", etc.).
+- **Por qué:** Lo pide la consigna ("cubo y flota actualizados, o excepción") y el jugador sabe por qué falló. En `ubicacion_automatica` el error se ataja con `pass`, porque ahí fallar es normal (prueba puntos al azar hasta que alguno entra).
+
+### Cada nave es un diccionario con un conjunto y un diccionario adentro
+
+```python
+{"tipo": "P", "puntos": {(5, 1, 1), (5, 1, 2), ...}, "impactos": {(5, 1, 1): 2}}
+```
+
+- **`puntos` es un conjunto:** Solo importa si un punto pertenece a la nave, no el orden, y `punto in conjunto` es inmediato.
+- **`impactos` es un diccionario punto → cantidad:** El portaaviones necesita dos impactos por celda, así que no alcanza con marcar "impactada" (hay que contar).
+- **Alternativa descartada:** La tupla `(tipo, puntos)` de la entrega 1. No permitía guardar impactos y obligaba a recordar qué había en cada posición (`nave[0]`).
+- La consigna pide manejar el estado con diccionarios y conjuntos.
+
+### Las reglas especiales de las naves son datos, no `if`
+
+- **Decisión:** `IMPACTOS_POR_CELDA = {"P": 2}` en `flota.py` y `NAVES_INMUNES_LASER = {"S"}` en `armamento.py`.
+- **Por qué:** La consigna prohíbe resolver estos casos con cadenas de `if` / `elif`. Además, si otra nave tuviera una regla parecida, se agrega una entrada sin tocar la lógica.
+
+### El disparo le pregunta a la flota, no al estado de la celda
+
+- **Decisión:** `_disparar_celda` decide si hay impacto con `buscar_nave` y `celda_destruida` (flota), no mirando si la celda dice `NAVE` (cubo).
+- **Por qué:** Después del primer impacto, una celda del portaaviones queda en `IMPACTO` pero todavía aguanta otro. Y una celda que el sonar marcó como `DETECTADO` sigue teniendo una nave. Mirando solo el cubo, los dos casos darían "repetido".
+- **Reparto de tareas:** `tablero` guarda los estados de las celdas, `flota` lleva la cuenta de cada nave y `armamento` decide qué pasa con cada disparo.
+
+### Todas las armas devuelven `{punto: resultado}`
+
+- **Decisión:** El torpedo devuelve `{(2, 4, 4): "impacto"}` y el misil de racimo hasta siete entradas. Las demás armas, igual.
+- **Por qué:** Las armas que afectan varias celdas pueden dar un resultado distinto en cada una. Con un formato único, el turno trata a todas las armas igual y se pueden elegir desde un diccionario letra → función.
+
+### El barrido láser se saltea las celdas de los submarinos
+
+- **Decisión:** Las celdas de un submarino no se tocan y no aparecen en el resultado del láser.
+- **Alternativa:** Reportarlas como "agua" sin marcarlas.
+- **Contra de la opción elegida:** Un jugador pillo podría notar que "faltan" celdas en el resultado y deducir que ahí hay un submarino. _(Pendiente de confirmar por el grupo.)_
+
+### Munición: un diccionario por jugador
+
+- **Decisión:** `crear_municion` copia el catálogo en un diccionario letra → cantidad, uno por jugador. El torpedo queda como `"ilimitada"`.
+- **Por qué:** Cada jugador gasta su propia munición (el catálogo no se modifica nunca).
+- **Orden de los chequeos en `usar_municion`:** cada chequeo evita que el siguiente falle.
+  1. **¿Existe el arma?** Si no existe, el programa fallaría al buscarla en el diccionario.
+  2. **¿Es ilimitada?** El torpedo tiene `"ilimitada"`, que es un texto (no se le puede restar 1).
+  3. **¿Le quedan usos?** Recién acá sabemos que es un número, y se puede restar.
+
+### Sonar
+
+- **Decisión:** Marca como `DETECTADO` solo las celdas en `NAVE` del plano elegido. Los "contactos" son celdas, no naves.
+- **Por qué solo `NAVE`:** Las celdas en `IMPACTO` o `HUNDIDO` el rival ya las conoce.
+
+### Búsqueda optimizada: recorrido en damero (paridad)
+
+- **Idea:** Se pinta cada celda según si `z + x + y` es par o impar. Dos celdas contiguas sobre un eje siempre tienen distinta paridad, y toda nave ocupa al menos dos celdas contiguas (**toda nave tiene una celda par**).
+- **Estrategia:** Primera pasada solo por las celdas pares (la mitad del cubo) y segunda por las impares. En cada pasada, `y` avanza de a 2, así que las celdas de la otra paridad ni se miran.
+- **Resultados:** ubicamos 300 flotas al azar en un cubo de 8 y, en cada una, buscamos la primera celda con `NAVE` con los dos métodos. Contamos cuántas celdas revisó cada uno hasta encontrarla (las "comparaciones"):
+
+  | Método                        | Cómo recorre                                | Celdas revisadas (promedio) |
+  | ----------------------------- | ------------------------------------------- | --------------------------- |
+  | `busqueda_lineal` (entrega 1) | Todas, una por una, en orden z, x, y        | 32,5                        |
+  | `busqueda_optimizada`         | Primero solo las pares, después las impares | 20,8                        |
+
+  La optimizada revisa alrededor de un 36 % menos de celdas. Si no hay ninguna nave, las dos terminan revisando las 512 celdas del cubo (N³ = 8 × 8 × 8): en el peor caso son iguales.
+
+- **¿Para qué la segunda pasada?** La garantía vale para naves enteras, pero la búsqueda busca un estado. Si a una fragata en `(1,1,1)-(1,1,2)` le pegan en `(1,1,2)` (par), la única celda que le queda en `NAVE` es `(1,1,1)` (impar). Lo mismo pasa con el sonar, o buscando estados de celdas sueltas como `IMPACTO`. La segunda pasada hace que la búsqueda sea siempre correcta.
+- **Alternativa descartada:** Buscar en la flota, que sabe dónde está cada nave. Sería hacer trampa: la consigna pide localizar la nave en el cubo, como lo haría un jugador.
+
+### Las búsquedas reciben un solo estado, no un conjunto
+
+- **Propuesta considerada:** Recibir un conjunto de estados, por ejemplo `{NAVE, IMPACTO, DETECTADO, HUNDIDO}` ("cualquier parte de una nave"). Con eso la primera pasada alcanzaría siempre.
+- **Por qué la dejamos para más adelante:**
+  - Los tres métodos (lineal, optimizado y recursivo) tienen que recibir lo mismo para comparar sus métricas en forma justa, y la lineal ya recibe un estado desde la entrega 1.
+  - Un pregunta útil para jugar ("¿dónde hay una celda sin dañar?") necesita la segunda pasada.
+- **A revisar en la entrega 3:** Cuando sepamos quién usa la búsqueda (máquina, torpedo guiado). El cambio es pasar de `== estado` a `in estados` en los tres métodos.
+
+### Dibujo de los planos
+
+- **Decisión:** `_dibujar_plano` dibuja cualquier matriz poniendo el primer índice en las columnas. La capa z (`[x][y]`) muestra x en columnas e y en filas; el plano x (`[z][y]`), z en columnas e y en filas; el plano y (`[z][x]`), z en columnas y x en filas.
+- **Por qué:** Una sola función de dibujo para los tres cortes, sin repetir código.
