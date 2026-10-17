@@ -144,6 +144,30 @@ def plano_y(cubo: list, y: int) -> list[list[int]] | None:
     return plano
 
 
+def puntos_plano(cubo: list, eje: str, valor: int) -> list[tuple[int, int, int]] | None:
+    """Recibe cubo, un eje ("z", "x" o "y") y su valor; devuelve todos los puntos
+    del plano que fija ese eje en ese valor."""
+    # Posicion de cada eje dentro del punto (z, x, y).
+    posiciones = {"z": 0, "x": 1, "y": 2}
+
+    # El eje no existe o el valor esta fuera del cubo.
+    if eje not in posiciones or valor < 1 or valor > len(cubo):
+        return None
+
+    lado = len(cubo)
+    puntos = []
+
+    # Recorrer todas las combinaciones de los otros dos ejes.
+    for primero in range(1, lado + 1):
+        for segundo in range(1, lado + 1):
+            # Meter el valor fijo en la posicion de su eje, entre los otros dos.
+            punto = [primero, segundo]
+            punto.insert(posiciones[eje], valor)
+            puntos.append(tuple(punto))
+
+    return puntos
+
+
 def dibujar_capa(cubo: list, z: int, mostrar_naves: bool = False) -> str | None:
     """Recibe cubo y z; devuelve el dibujo de esa capa."""
     # La capa pedida no esta en el cubo.
