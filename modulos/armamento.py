@@ -34,6 +34,16 @@ def torpedo(
     if not punto_valido(cubo, punto):
         return None
 
+    # El torpedo afecta solo la celda apuntada.
+    resultado = _disparar_celda(cubo, flota, punto)
+
+    # Devolver las celdas afectadas y el resultado.
+    return [punto], resultado
+
+
+def _disparar_celda(cubo: list, flota: list, punto: tuple) -> str:
+    """Recibe el cubo, la flota del rival y un punto valido; dispara a esa celda
+    y devuelve el resultado: "agua", "impacto", "hundido" o "repetido"."""
     # Ver que hay en la celda y si alguna nave la ocupa.
     estado = leer_celda(cubo, punto)
     nave = buscar_nave(flota, punto)
@@ -60,5 +70,4 @@ def torpedo(
     else:
         resultado = "repetido"
 
-    # Devolver las celdas afectadas (el torpedo afecta solo una) y el resultado.
-    return [punto], resultado
+    return resultado
