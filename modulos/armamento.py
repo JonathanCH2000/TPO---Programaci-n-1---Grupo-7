@@ -29,17 +29,15 @@ CATALOGO_ARMAS = [
 
 def torpedo(
     cubo: list, flota: list, punto: tuple
-) -> tuple[list[tuple[int, int, int]], str] | None:
-    """Recibe el cubo y la flota del rival y un punto; marca el disparo y devuelve el resultado."""
+) -> dict[tuple[int, int, int], str] | None:
+    """Recibe el cubo, la flota del rival y un punto; dispara solo a esa celda.
+    Devuelve un diccionario punto -> resultado."""
     # El punto apuntado esta fuera del cubo.
     if not punto_valido(cubo, punto):
         return None
 
-    # El torpedo afecta solo la celda apuntada.
-    resultado = _disparar_celda(cubo, flota, punto)
-
-    # Devolver las celdas afectadas y el resultado.
-    return [punto], resultado
+    # El torpedo afecta solo la celda objetivo.
+    return {punto: _disparar_celda(cubo, flota, punto)}
 
 
 def misil_racimo(
