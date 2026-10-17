@@ -12,6 +12,7 @@ from modulos.tablero import (
     escribir_celda,
     leer_celda,
     punto_valido,
+    puntos_vecinos,
 )
 
 # Letra, nombre y municion inicial.
@@ -39,6 +40,26 @@ def torpedo(
 
     # Devolver las celdas afectadas y el resultado.
     return [punto], resultado
+
+
+def misil_racimo(
+    cubo: list, flota: list, punto: tuple
+) -> dict[tuple[int, int, int], str] | None:
+    """Recibe el cubo y la flota del rival y un punto; dispara a la celda y
+    a sus seis vecinos ortogonales. Devuelve un diccionario punto -> resultado."""
+    # El punto esta fuera del cubo.
+    if not punto_valido(cubo, punto):
+        return None
+
+    # La celda y sus vecinos ortogonales que quedan dentro del cubo.
+    celdas = [punto] + puntos_vecinos(cubo, punto)
+    resultados = {}
+
+    # Disparar a cada celda y guardar su resultado.
+    for celda in celdas:
+        resultados[celda] = _disparar_celda(cubo, flota, celda)
+
+    return resultados
 
 
 def _disparar_celda(cubo: list, flota: list, punto: tuple) -> str:
