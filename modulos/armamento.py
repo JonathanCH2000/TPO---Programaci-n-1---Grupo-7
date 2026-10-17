@@ -30,6 +30,17 @@ CATALOGO_ARMAS = [
 NAVES_INMUNES_LASER = {"S"}
 
 
+def crear_municion() -> dict[str, int | str]:
+    """Devuelve la municion inicial de un jugador: un diccionario letra del arma -> municion."""
+    municion = {}
+
+    # Cada arma arranca con la municion que indica el catalogo.
+    for letra, _, cantidad in CATALOGO_ARMAS:
+        municion[letra] = cantidad
+
+    return municion
+
+
 def torpedo(
     cubo: list, flota: list, punto: tuple
 ) -> dict[tuple[int, int, int], str] | None:
