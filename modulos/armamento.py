@@ -1,3 +1,4 @@
+from modulos.errores import ErrorMunicion
 from modulos.flota import (
     buscar_nave,
     celda_destruida,
@@ -28,6 +29,36 @@ CATALOGO_ARMAS = [
 
 # Tipos de nave que el barrido laser no alcanza.
 NAVES_INMUNES_LASER = {"S"}
+
+
+def crear_municion() -> dict[str, int | str]:
+    """Devuelve la municion inicial de un jugador: un diccionario letra del arma -> municion."""
+    municion = {}
+
+    # Cada arma arranca con la municion que indica el catalogo.
+    for letra, _, cantidad in CATALOGO_ARMAS:
+        municion[letra] = cantidad
+
+    return municion
+
+
+def usar_municion(municion: dict, letra: str) -> dict[str, int | str]:
+    """Recibe la municion de un jugador y la letra de un arma; descuenta
+    un uso y devuelve la municion actualizada.
+    Lanza ErrorMunicion si el arma no existe o si ya no le queda municion."""
+    if letra not in municion:
+        raise ErrorMunicion("El arma no existe.")
+
+    # Las armas con municion ilimitada (el torpedo) no gastan nada.
+    if municion[letra] == "ilimitada":
+        return municion
+
+    if municion[letra] == 0:
+        raise ErrorMunicion("No queda municion de esa arma.")
+
+    # Se uso una municion, reducir cantidad.
+    municion[letra] -= 1
+    return municion
 
 
 def torpedo(

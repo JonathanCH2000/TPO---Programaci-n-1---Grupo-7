@@ -7,3 +7,7 @@ class ErrorCubo(Exception):
 
 class ErrorUbicacion(ErrorCubo):
     """Se lanza cuando una nave no se puede ubicar en las coordenadas dadas."""
+
+
+class ErrorMunicion(ErrorCubo):
+    """Se lanza cuando se quiere usar un arma que no existe o que no tiene municion."""
