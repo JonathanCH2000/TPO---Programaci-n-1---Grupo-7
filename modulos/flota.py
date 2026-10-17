@@ -1,5 +1,6 @@
 import random
 
+from modulos.errores import ErrorUbicacion
 from modulos.tablero import (
     AGUA,
     NAVE,
@@ -21,41 +22,36 @@ CATALOGO = [
 
 def ubicar_nave(
     cubo: list, flota: list, tipo: str, desde: tuple, hasta: tuple
-) -> tuple[list, list] | None:
-    """Marcar nave en el cubo, agregar nave a la flota y devolver una tupla(cubo, flota)."""
+) -> tuple[list, list]:
+    """Recibe cubo, flota, tipo de nave y los extremos del tramo.
+    Marca la nave en el cubo, la agrega a la flota y devuelve (cubo, flota).
+    Lanza ErrorUbicacion si la nave no se puede ubicar en esa ubicacion."""
     modelo_nave = datos_nave(tipo)
 
-    # La nave no se encuentra en el catalogo.
     if modelo_nave is None:
-        return None
+        raise ErrorUbicacion("La nave no existe en el catalogo.")
 
-    # No quedan naves del tipo seleccionado para ubicar.
     if cantidad_ubicada(flota, tipo) >= modelo_nave[3]:
-        return None
+        raise ErrorUbicacion("Ya se ubicaron todas las naves de ese tipo.")
 
     # Queda al menos 1 nave del tipo seleccionado para ubicar.
     puntos = _obtener_puntos(tipo, desde, hasta)
 
-    # El tramo no tiene la forma o el largo de la nave.
     if puntos is None:
-        return None
+        raise ErrorUbicacion("El tramo no tiene la forma o el largo de la nave.")
 
     for punto in puntos:
-        # La nave se sale del cubo.
         if not punto_valido(cubo, punto):
-            return None
+            raise ErrorUbicacion("La nave se sale del cubo.")
 
-        # La nave no cumple la restriccion de ubicacion de su tipo.
         if not _cumple_restriccion(cubo, tipo, punto):
-            return None
+            raise ErrorUbicacion("La nave no cumple la restriccion de ubicacion de su tipo.")
 
-        # La celda ya esta ocupada por otra nave.
         if leer_celda(cubo, punto) != AGUA:
-            return None
+            raise ErrorUbicacion("La celda ya esta ocupada por otra nave.")
 
-        # Tiene que quedar al menos una celda libre con las otras naves.
         if _hay_nave_cerca(cubo, punto):
-            return None
+            raise ErrorUbicacion("Tiene que quedar al menos una celda libre con las otras naves.")
 
     for punto in puntos:
         # Escribir sobre las celdas correspondientes la ubicacion de la nave.
@@ -102,7 +98,10 @@ def ubicacion_automatica(
             hasta = _extremo_al_azar(modelo_nave, desde)
 
             # Intentar ubicarla. Si no cumple las reglas, no se agrega y se prueba otro punto.
-            ubicar_nave(cubo, flota, tipo, desde, hasta)
+            try:
+                ubicar_nave(cubo, flota, tipo, desde, hasta)
+            except ErrorUbicacion:
+                pass
 
     return flota
 
