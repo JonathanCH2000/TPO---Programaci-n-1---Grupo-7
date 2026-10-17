@@ -97,3 +97,9 @@ Registro de las decisiones que tomamos como grupo, con las alternativas que cons
 
 - **Decisión:** `_dibujar_plano` dibuja cualquier matriz poniendo el primer índice en las columnas. La capa z (`[x][y]`) muestra x en columnas e y en filas; el plano x (`[z][y]`), z en columnas e y en filas; el plano y (`[z][x]`), z en columnas y x en filas.
 - **Por qué:** Una sola función de dibujo para los tres cortes, sin repetir código.
+
+### Cada jugada del historial guarda todos los resultados del arma
+
+- **Decisión:** La jugada guarda el punto y el diccionario `{punto: resultado}` completo que devolvió el arma, en vez de un solo resultado.
+- **Por qué:** Desde que hay armas que afectan varias celdas (racimo, carga de profundidad, láser), un disparo puede dar agua en unas celdas e impacto en otras. Con un solo resultado se perdería información y las estadísticas contarían mal.
+- **Alternativa descartada:** Guardar una jugada por cada celda afectada. Un racimo sumaría siete "turnos" al historial y el número de turno dejaría de corresponder a los turnos reales.
