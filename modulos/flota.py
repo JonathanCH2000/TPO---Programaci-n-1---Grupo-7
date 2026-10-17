@@ -57,8 +57,8 @@ def ubicar_nave(
         # Escribir sobre las celdas correspondientes la ubicacion de la nave.
         escribir_celda(cubo, punto, NAVE)
 
-    # Agregar la nave a la flota: su tipo y el conjunto de puntos que ocupa.
-    nave = {"tipo": tipo, "puntos": set(puntos)}
+    # Agregar la nave a la flota: su tipo, el conjunto de puntos que ocupa y sus impactos (ninguno todavia).
+    nave = {"tipo": tipo, "puntos": set(puntos), "impactos": {}}
     flota.append(nave)
 
     return cubo, flota
@@ -127,6 +127,20 @@ def cantidad_ubicada(flota: list, tipo: str) -> int:
         if nave["tipo"] == tipo:
             cantidad += 1
     return cantidad
+
+
+def registrar_impacto(flota: list, punto: tuple) -> dict | None:
+    """Recibe flota y punto; suma un impacto a la nave que ocupa ese punto y la devuelve.
+    Si ninguna nave ocupa ese punto, devuelve None."""
+    for nave in flota:
+        # Buscar la nave que ocupa ese punto.
+        if punto in nave["puntos"]:
+            # Sumar un impacto a esa celda. Si todavia no tenia ninguno, arranca en 0.
+            nave["impactos"][punto] = nave["impactos"].get(punto, 0) + 1
+            return nave
+
+    # El punto no pertenece a ninguna nave: fue agua.
+    return None
 
 
 def _obtener_puntos(
