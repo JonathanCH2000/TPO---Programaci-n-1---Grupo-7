@@ -136,29 +136,45 @@ def cantidad_ubicada(flota: list, tipo: str) -> int:
     return cantidad
 
 
+def buscar_nave(flota: list, punto: tuple) -> dict | None:
+    """Recibe flota y punto; devuelve la nave que ocupa ese punto, o None si no hay ninguna."""
+    for nave in flota:
+        if punto in nave["puntos"]:
+            return nave
+
+    return None
+
+
 def registrar_impacto(flota: list, punto: tuple) -> dict | None:
     """Recibe flota y punto; suma un impacto a la nave que ocupa ese punto y la devuelve.
     Si ninguna nave ocupa ese punto, devuelve None."""
-    for nave in flota:
-        # Buscar la nave que ocupa ese punto.
-        if punto in nave["puntos"]:
-            # Sumar un impacto a esa celda. Si todavia no tenia ninguno, arranca en 0.
-            nave["impactos"][punto] = nave["impactos"].get(punto, 0) + 1
-            return nave
+    nave = buscar_nave(flota, punto)
 
     # El punto no pertenece a ninguna nave: fue agua.
-    return None
+    if nave is None:
+        return None
+
+    # Sumar un impacto a esa celda. Si todavia no tenia ninguno, arranca en 0.
+    nave["impactos"][punto] = nave["impactos"].get(punto, 0) + 1
+    return nave
+
+
+def celda_destruida(nave: dict, punto: tuple) -> bool:
+    """Recibe una nave y uno de sus puntos; devuelve True si esa celda ya recibio
+    los impactos necesarios."""
+    # Buscar cuantos impactos necesita cada celda de este tipo de nave (1 si no figura).
+    necesarios = IMPACTOS_POR_CELDA.get(nave["tipo"], 1)
+
+    return nave["impactos"].get(punto, 0) >= necesarios
 
 
 def celdas_destruidas(nave: dict) -> int:
     """Recibe una nave; devuelve cuantas de sus celdas ya recibieron los impactos necesarios."""
-    # Buscar cuantos impactos necesita cada celda de este tipo de nave (1 si no figura).
-    necesarios = IMPACTOS_POR_CELDA.get(nave["tipo"], 1)
     destruidas = 0
 
-    # Contar las celdas que llegaron a esa cantidad de impactos.
-    for impactos in nave["impactos"].values():
-        if impactos >= necesarios:
+    # Contar las celdas de la nave que ya estan destruidas.
+    for punto in nave["puntos"]:
+        if celda_destruida(nave, punto):
             destruidas += 1
 
     return destruidas
