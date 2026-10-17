@@ -97,3 +97,16 @@ Registro de las decisiones que tomamos como grupo, con las alternativas que cons
 
 - **Decisión:** `_dibujar_plano` dibuja cualquier matriz poniendo el primer índice en las columnas. La capa z (`[x][y]`) muestra x en columnas e y en filas; el plano x (`[z][y]`), z en columnas e y en filas; el plano y (`[z][x]`), z en columnas y x en filas.
 - **Por qué:** Una sola función de dibujo para los tres cortes, sin repetir código.
+
+### Cada jugada del historial guarda todos los resultados del arma
+
+- **Decisión:** La jugada guarda el punto y el diccionario `{punto: resultado}` completo que devolvió el arma, en vez de un solo resultado.
+- **Por qué:** Desde que hay armas que afectan varias celdas (racimo, carga de profundidad, láser), un disparo puede dar agua en unas celdas e impacto en otras. Con un solo resultado se perdería información y las estadísticas contarían mal.
+- **Alternativa descartada:** Guardar una jugada por cada celda afectada. Un racimo sumaría siete "turnos" al historial y el número de turno dejaría de corresponder a los turnos reales.
+
+### Cómo se calcula el porcentaje de acierto
+
+- **Decisión:** El acierto se mide por **celdas**, no por jugadas: celdas con `impacto` o `hundido` sobre todas las celdas disparadas (`agua`, `impacto`, `hundido` y `repetido`). Los disparos repetidos cuentan como fallo.
+- **Por qué por celdas:** Un racimo que acierta en una celda de siete no es lo mismo que un torpedo que acierta en su única celda. Contando por jugada, los dos serían "un acierto".
+- **Por qué el repetido es fallo:** Es un disparo desperdiciado, así que debe bajar el porcentaje.
+- **Las naves hundidas** se cuentan con los `hundido`: Cada nave hundida produce exactamente un `hundido`, el del impacto que la terminó de hundir.
