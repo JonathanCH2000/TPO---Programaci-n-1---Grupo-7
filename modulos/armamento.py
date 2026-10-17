@@ -43,7 +43,7 @@ def torpedo(
 def misil_racimo(
     cubo: list, flota: list, punto: tuple
 ) -> dict[tuple[int, int, int], str] | None:
-    """Recibe el cubo y la flota del rival y un punto; dispara a la celda y
+    """Recibe el cubo, la flota del rival y un punto; dispara a la celda y
     a sus seis vecinos ortogonales. Devuelve un diccionario punto -> resultado."""
     # El punto esta fuera del cubo.
     if not punto_valido(cubo, punto):
@@ -55,6 +55,27 @@ def misil_racimo(
 
     # Disparar a cada celda y guardar su resultado.
     for celda in celdas:
+        resultados[celda] = _disparar_celda(cubo, flota, celda)
+
+    return resultados
+
+
+def carga_profundidad(
+    cubo: list, flota: list, punto: tuple
+) -> dict[tuple[int, int, int], str] | None:
+    """Recibe el cubo, la flota del rival y un punto; dispara a toda la recta sobre
+    el eje z que pasa por ese punto. Devuelve un diccionario punto -> resultado."""
+    # El punto esta fuera del cubo.
+    if not punto_valido(cubo, punto):
+        return None
+
+    # Solo importan el x y el y del punto: la carga recorre todos los z.
+    _, x, y = punto
+    resultados = {}
+
+    # Disparar a la celda de ese x e y en cada capa de z, de la 1 a la N.
+    for z in range(1, len(cubo) + 1):
+        celda = (z, x, y)
         resultados[celda] = _disparar_celda(cubo, flota, celda)
 
     return resultados
