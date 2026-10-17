@@ -1,5 +1,6 @@
 import re
 
+from modulos.errores import ErrorUbicacion
 from modulos.flota import (
     CATALOGO,
     cantidad_ubicada,
@@ -116,10 +117,11 @@ def _preparar_jugador(numero: int, lado: int) -> list:
                 else:
                     # Pedir el tramo e intentar ubicar la nave.
                     desde, hasta = _pedir_tramo()
-                    resultado = ubicar_nave(cubo, flota, tipo, desde, hasta)
-
-                    if resultado is None:
-                        print("No se puede ubicar ahi.")
+                    try:
+                        ubicar_nave(cubo, flota, tipo, desde, hasta)
+                    except ErrorUbicacion as error:
+                        # Mostrar el motivo por el que no se pudo ubicar.
+                        print(f"No se puede ubicar ahi. {error}")
                     else:
                         print("Nave ubicada.")
 
