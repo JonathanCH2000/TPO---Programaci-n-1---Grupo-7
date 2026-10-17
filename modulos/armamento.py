@@ -1,3 +1,4 @@
+from modulos.flota import registrar_impacto
 from modulos.tablero import (
     AGUA,
     AGUA_MARCADA,
@@ -20,8 +21,10 @@ CATALOGO_ARMAS = [
 ]
 
 
-def torpedo(cubo: list, punto: tuple) -> tuple[list[tuple[int, int, int]], str] | None:
-    """Recibe un cubo y un punto; marca el disparo y devuelve el resultado."""
+def torpedo(
+    cubo: list, flota: list, punto: tuple
+) -> tuple[list[tuple[int, int, int]], str] | None:
+    """Recibe el cubo y la flota del rival y un punto; marca el disparo y devuelve el resultado."""
     # El punto apuntado esta fuera del cubo.
     if not punto_valido(cubo, punto):
         return None
@@ -29,9 +32,10 @@ def torpedo(cubo: list, punto: tuple) -> tuple[list[tuple[int, int, int]], str] 
     # Ver que hay en la celda apuntada.
     estado = leer_celda(cubo, punto)
 
-    # Habia una nave: se marca como impacto.
+    # Habia una nave: se marca como impacto y se le suma el impacto a la nave.
     if estado == NAVE:
         escribir_celda(cubo, punto, IMPACTO)
+        registrar_impacto(flota, punto)
         resultado = "impacto"
 
     # Habia agua sin explorar: se marca como agua.
