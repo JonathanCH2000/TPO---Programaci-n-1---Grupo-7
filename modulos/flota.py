@@ -19,6 +19,9 @@ CATALOGO = [
     ("E", "Estacion orbital", 8, 1),
 ]
 
+# Impactos que necesita cada celda para quedar destruida. Las naves que no figuran necesitan 1.
+IMPACTOS_POR_CELDA = {"P": 2}
+
 
 def ubicar_nave(
     cubo: list, flota: list, tipo: str, desde: tuple, hasta: tuple
@@ -45,27 +48,32 @@ def ubicar_nave(
             raise ErrorUbicacion("La nave se sale del cubo.")
 
         if not _cumple_restriccion(cubo, tipo, punto):
-            raise ErrorUbicacion("La nave no cumple la restriccion de ubicacion de su tipo.")
+            raise ErrorUbicacion(
+                "La nave no cumple la restriccion de ubicacion de su tipo."
+            )
 
         if leer_celda(cubo, punto) != AGUA:
             raise ErrorUbicacion("La celda ya esta ocupada por otra nave.")
 
         if _hay_nave_cerca(cubo, punto):
-            raise ErrorUbicacion("Tiene que quedar al menos una celda libre con las otras naves.")
+            raise ErrorUbicacion(
+                "Tiene que quedar al menos una celda libre con las otras naves."
+            )
 
     for punto in puntos:
         # Escribir sobre las celdas correspondientes la ubicacion de la nave.
         escribir_celda(cubo, punto, NAVE)
 
-    # Agregar a la flota una tupla con (tipo de nave, puntos validos seleccionados)
-    flota.append((tipo, puntos))
+    # Agregar la nave a la flota: su tipo, el conjunto de puntos que ocupa y sus impactos (ninguno todavia).
+    nave = {"tipo": tipo, "puntos": set(puntos), "impactos": {}}
+    flota.append(nave)
 
     return cubo, flota
 
 
 def ubicacion_automatica(
     cubo: list, catalogo: list, semilla: int | None
-) -> list[tuple[str, list[tuple[int, int, int]]]] | None:
+) -> list[dict] | None:
     """Ubica al azar todas las naves del catalogo respetando las reglas y devuelve la flota."""
     # Con la misma semilla siempre sale la misma flota. Con None sale una distinta cada vez.
     random.seed(semilla)
@@ -123,9 +131,42 @@ def cantidad_ubicada(flota: list, tipo: str) -> int:
     """Obtiene la cantidad de naves ubicadas del tipo seleccionado."""
     cantidad = 0
     for nave in flota:
-        if nave[0] == tipo:
+        if nave["tipo"] == tipo:
             cantidad += 1
     return cantidad
+
+
+def registrar_impacto(flota: list, punto: tuple) -> dict | None:
+    """Recibe flota y punto; suma un impacto a la nave que ocupa ese punto y la devuelve.
+    Si ninguna nave ocupa ese punto, devuelve None."""
+    for nave in flota:
+        # Buscar la nave que ocupa ese punto.
+        if punto in nave["puntos"]:
+            # Sumar un impacto a esa celda. Si todavia no tenia ninguno, arranca en 0.
+            nave["impactos"][punto] = nave["impactos"].get(punto, 0) + 1
+            return nave
+
+    # El punto no pertenece a ninguna nave: fue agua.
+    return None
+
+
+def celdas_destruidas(nave: dict) -> int:
+    """Recibe una nave; devuelve cuantas de sus celdas ya recibieron los impactos necesarios."""
+    # Buscar cuantos impactos necesita cada celda de este tipo de nave (1 si no figura).
+    necesarios = IMPACTOS_POR_CELDA.get(nave["tipo"], 1)
+    destruidas = 0
+
+    # Contar las celdas que llegaron a esa cantidad de impactos.
+    for impactos in nave["impactos"].values():
+        if impactos >= necesarios:
+            destruidas += 1
+
+    return destruidas
+
+
+def nave_hundida(nave: dict) -> bool:
+    """Recibe una nave; devuelve True si todas sus celdas estan destruidas."""
+    return celdas_destruidas(nave) == len(nave["puntos"])
 
 
 def _obtener_puntos(
