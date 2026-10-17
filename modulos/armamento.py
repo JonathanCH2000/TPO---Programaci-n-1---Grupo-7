@@ -26,6 +26,9 @@ CATALOGO_ARMAS = [
     ("G", "Torpedo guiado", 1),
 ]
 
+# Tipos de nave que el barrido laser no alcanza.
+NAVES_INMUNES_LASER = {"S"}
+
 
 def torpedo(
     cubo: list, flota: list, punto: tuple
@@ -101,6 +104,11 @@ def barrido_laser(
         celda = list(punto)
         celda[posicion] = valor
         celda = tuple(celda)
+
+        # El laser pasa de largo por las celdas de las naves inmunes, sin tocarlas.
+        nave = buscar_nave(flota, celda)
+        if nave is not None and nave["tipo"] in NAVES_INMUNES_LASER:
+            continue
 
         resultados[celda] = _disparar_celda(cubo, flota, celda)
 
