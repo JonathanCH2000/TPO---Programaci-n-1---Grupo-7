@@ -19,6 +19,9 @@ CATALOGO = [
     ("E", "Estacion orbital", 8, 1),
 ]
 
+# Impactos que necesita cada celda para quedar destruida. Las naves que no figuran necesitan 1.
+IMPACTOS_POR_CELDA = {"P": 2}
+
 
 def ubicar_nave(
     cubo: list, flota: list, tipo: str, desde: tuple, hasta: tuple
@@ -45,13 +48,17 @@ def ubicar_nave(
             raise ErrorUbicacion("La nave se sale del cubo.")
 
         if not _cumple_restriccion(cubo, tipo, punto):
-            raise ErrorUbicacion("La nave no cumple la restriccion de ubicacion de su tipo.")
+            raise ErrorUbicacion(
+                "La nave no cumple la restriccion de ubicacion de su tipo."
+            )
 
         if leer_celda(cubo, punto) != AGUA:
             raise ErrorUbicacion("La celda ya esta ocupada por otra nave.")
 
         if _hay_nave_cerca(cubo, punto):
-            raise ErrorUbicacion("Tiene que quedar al menos una celda libre con las otras naves.")
+            raise ErrorUbicacion(
+                "Tiene que quedar al menos una celda libre con las otras naves."
+            )
 
     for punto in puntos:
         # Escribir sobre las celdas correspondientes la ubicacion de la nave.
@@ -141,6 +148,25 @@ def registrar_impacto(flota: list, punto: tuple) -> dict | None:
 
     # El punto no pertenece a ninguna nave: fue agua.
     return None
+
+
+def celdas_destruidas(nave: dict) -> int:
+    """Recibe una nave; devuelve cuantas de sus celdas ya recibieron los impactos necesarios."""
+    # Buscar cuantos impactos necesita cada celda de este tipo de nave (1 si no figura).
+    necesarios = IMPACTOS_POR_CELDA.get(nave["tipo"], 1)
+    destruidas = 0
+
+    # Contar las celdas que llegaron a esa cantidad de impactos.
+    for impactos in nave["impactos"].values():
+        if impactos >= necesarios:
+            destruidas += 1
+
+    return destruidas
+
+
+def nave_hundida(nave: dict) -> bool:
+    """Recibe una nave; devuelve True si todas sus celdas estan destruidas."""
+    return celdas_destruidas(nave) == len(nave["puntos"])
 
 
 def _obtener_puntos(
