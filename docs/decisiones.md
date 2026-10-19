@@ -128,3 +128,12 @@ jugador = {"nombre": "Jugador 1", "es_maquina": False, "cubo": ..., "flota": ...
 - **`"es_maquina"`:** Los tres formatos de partida (uno contra uno, contra la máquina, máquina contra máquina) usan el mismo estado; lo único que cambia es quién elige la jugada.
 - **Por qué diccionarios y listas:** Lo pide la consigna, y en la entrega 3 este mismo estado se guarda en JSON.
 - **Alternativa descartada:** Claves fijas `"jugador_1"` y `"jugador_2"`. Para saber quién es el rival habría que preguntar con un `if`.
+
+### Elección del arma con un diccionario y adaptadores
+
+- **Decisión:** `ARMAS` en `armamento.py` asocia cada letra con una función: `{"T": _usar_torpedo, "R": _usar_racimo, ...}`. La función pública `disparar(cubo, flota, jugada)` busca el arma en el diccionario y la usa.
+- **Por qué:** La consigna pide resolver la selección del arma con un diccionario que asocie nombre y función, sin cadenas de `if` / `elif`.
+- **Problema:** Las armas reciben datos distintos (el láser necesita un eje; el sonar, un eje y un valor y ni siquiera la flota). Para guardarlas en el mismo diccionario, todas tienen que recibir lo mismo.
+- **Solución:** Adaptadores chiquitos (`_usar_torpedo`, `_usar_laser`, etc.) con la misma firma `(cubo, flota, jugada)`. Cada uno saca de la jugada lo que necesita su arma. Las armas originales no cambiaron.
+- **El sonar** devuelve una lista de puntos; su adaptador la convierte en `{punto: "detectado"}` para que tenga el mismo formato que las demás.
+- **La onda expansiva y el torpedo guiado** no están en el diccionario hasta la entrega 3; si se eligen, `disparar` lanza `ErrorJugada`.

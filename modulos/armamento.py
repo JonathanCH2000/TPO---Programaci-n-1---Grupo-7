@@ -1,10 +1,11 @@
-from modulos.errores import ErrorMunicion
+from modulos.errores import ErrorJugada, ErrorMunicion
 from modulos.flota import (
     buscar_nave,
     celda_destruida,
     nave_hundida,
     registrar_impacto,
 )
+from modulos.radar import sonar
 from modulos.tablero import (
     AGUA,
     AGUA_MARCADA,
@@ -144,6 +145,72 @@ def barrido_laser(
         resultados[celda] = _disparar_celda(cubo, flota, celda)
 
     return resultados
+
+
+def disparar(cubo: list, flota: list, jugada: dict) -> dict[tuple[int, int, int], str]:
+    """Recibe el cubo y la flota del rival y una jugada (arma, punto, eje y valor);
+    usa el arma elegida y devuelve un diccionario punto -> resultado.
+    Lanza ErrorJugada si el arma no esta disponible o el objetivo no es valido."""
+    if jugada["arma"] not in ARMAS:
+        raise ErrorJugada("Esa arma no esta disponible.")
+
+    # Buscar la funcion del arma en el diccionario y usarla.
+    usar_arma = ARMAS[jugada["arma"]]
+    resultados = usar_arma(cubo, flota, jugada)
+
+    if resultados is None:
+        raise ErrorJugada("El objetivo no es valido.")
+
+    return resultados
+
+
+# Adaptadores: cada arma recibe datos distintos, pero todos estos reciben lo mismo
+# (cubo, flota, jugada) para poder guardarlos juntos en el diccionario ARMAS.
+def _usar_torpedo(cubo: list, flota: list, jugada: dict) -> dict | None:
+    """Usa el torpedo sobre el punto de la jugada."""
+    return torpedo(cubo, flota, jugada["punto"])
+
+
+def _usar_racimo(cubo: list, flota: list, jugada: dict) -> dict | None:
+    """Usa el misil de racimo sobre el punto de la jugada."""
+    return misil_racimo(cubo, flota, jugada["punto"])
+
+
+def _usar_carga(cubo: list, flota: list, jugada: dict) -> dict | None:
+    """Usa la carga de profundidad sobre el punto de la jugada."""
+    return carga_profundidad(cubo, flota, jugada["punto"])
+
+
+def _usar_laser(cubo: list, flota: list, jugada: dict) -> dict | None:
+    """Usa el barrido laser sobre el punto y el eje de la jugada."""
+    return barrido_laser(cubo, flota, jugada["punto"], jugada["eje"])
+
+
+def _usar_sonar(cubo: list, flota: list, jugada: dict) -> dict | None:
+    """Usa el sonar sobre el plano (eje y valor) de la jugada. Cada celda detectada
+    queda con el resultado "detectado", para tener el mismo formato que las demas armas."""
+    detectados = sonar(cubo, jugada["eje"], jugada["valor"])
+
+    # El eje o el valor no son validos.
+    if detectados is None:
+        return None
+
+    resultados = {}
+    for punto in detectados:
+        resultados[punto] = "detectado"
+
+    return resultados
+
+
+# Letra del arma -> funcion que la usa. La onda expansiva (O) y el torpedo guiado (G)
+# se agregan en la entrega 3.
+ARMAS = {
+    "T": _usar_torpedo,
+    "R": _usar_racimo,
+    "C": _usar_carga,
+    "L": _usar_laser,
+    "S": _usar_sonar,
+}
 
 
 def _disparar_celda(cubo: list, flota: list, punto: tuple) -> str:
