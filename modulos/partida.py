@@ -1,3 +1,4 @@
+import random
 import re
 
 from modulos.armamento import crear_municion, disparar, usar_municion
@@ -15,7 +16,15 @@ from modulos.flota import (
     ubicar_nave,
 )
 from modulos.registro import crear_historial, registrar_jugada, resumen
-from modulos.tablero import crear_cubo, dibujar_capa
+from modulos.tablero import (
+    AGUA,
+    DETECTADO,
+    IMPACTO,
+    NAVE,
+    crear_cubo,
+    dibujar_capa,
+    leer_celda,
+)
 
 
 def menu_interactivo() -> None:
@@ -34,7 +43,7 @@ def menu_interactivo() -> None:
             case 1:
                 _jugar_partida(nueva_partida_1v1())
             case 2:
-                nueva_partida_vs_maquina()
+                _jugar_partida(nueva_partida_vs_maquina())
             case 3:
                 nueva_partida_maquina_vs_maquina()
             case 4:
@@ -118,10 +127,18 @@ def ejecutar_turno(estado: dict, jugada: dict) -> dict:
 
 
 def turno_maquina(estado: dict) -> dict:
-    """Estado → estado actualizado, jugado por la máquina."""
-    # TODO: se implementa en una entrega posterior.
-    print("Todavia no esta implementado")
-    return {}
+    """Recibe el estado con la maquina de turno; elige un objetivo, dispara un torpedo
+    y devuelve el estado actualizado."""
+    rival = estado["jugadores"][1 - estado["turno"]]
+
+    jugada = {
+        "arma": "T",
+        "punto": _objetivo_al_azar(rival["cubo"]),
+        "eje": None,
+        "valor": None,
+    }
+
+    return ejecutar_turno(estado, jugada)
 
 
 def hay_ganador(estado: dict) -> str | None:
@@ -213,6 +230,12 @@ def _jugar_partida(estado: dict) -> None:
         jugador = estado["jugadores"][estado["turno"]]
 
         print(f"--- Turno de {jugador['nombre']} ---")
+
+        # La maquina juega sola; la persona elige en el menu del turno.
+        if jugador["es_maquina"]:
+            _turno_de_maquina(estado)
+            continue
+
         print("1 - Disparar")
         print("2 - Ver el cubo")
         opcion = _pedir_opcion(2)
@@ -290,6 +313,45 @@ MENSAJES_RESULTADO = {
     "repetido": "Ya habias disparado ahi.",
     "detectado": "Contacto detectado.",
 }
+
+
+def _turno_de_maquina(estado: dict) -> None:
+    """Hace jugar a la maquina de turno y muestra donde disparo y que paso."""
+    rival = estado["jugadores"][1 - estado["turno"]]
+
+    turno_maquina(estado)
+    jugada = estado["historial"][-1]
+
+    punto = jugada["punto"]
+    print(f"Dispara a {punto[0]},{punto[1]},{punto[2]}.")
+    _mostrar_resultados(rival, jugada)
+
+
+def _objetivo_al_azar(cubo: list) -> tuple[int, int, int]:
+    """Recibe el cubo del rival; devuelve al azar un punto al que todavia no se disparo.
+    Si ya se disparo a todos, devuelve un punto con impacto (el portaaviones necesita
+    dos impactos por celda)."""
+    sin_disparar = []
+    impactados = []
+    lado = len(cubo)
+
+    # Separar las celdas segun lo que la maquina puede ver de ellas.
+    for z in range(1, lado + 1):
+        for x in range(1, lado + 1):
+            for y in range(1, lado + 1):
+                punto = (z, x, y)
+                estado_celda = leer_celda(cubo, punto)
+
+                # Agua y naves ocultas se ven igual: todavia no se disparo ahi.
+                if estado_celda in (AGUA, NAVE, DETECTADO):
+                    sin_disparar.append(punto)
+                elif estado_celda == IMPACTO:
+                    impactados.append(punto)
+
+    if len(sin_disparar) > 0:
+        return random.choice(sin_disparar)
+
+    return random.choice(impactados)
 
 
 def _turno_ver_cubo(estado: dict) -> None:

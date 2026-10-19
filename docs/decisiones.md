@@ -144,3 +144,10 @@ jugador = {"nombre": "Jugador 1", "es_maquina": False, "cubo": ..., "flota": ...
 - **Decisión:** `ejecutar_turno` copia el diccionario de munición, gasta en la copia (si no queda, salta `ErrorMunicion` y no pasa nada), dispara, y **recién si el disparo salió bien** reemplaza la munición del jugador por la copia.
 - **Por qué:** El turno es "todo o nada": o se gasta la munición, se dispara, se registra y pasa el turno, o no cambia nada. Así el jugador puede corregir la jugada y volver a intentar.
 - **Alternativa descartada:** Gastar y, si el disparo falla, "devolver" la munición. Hay que acordarse de devolverla en cada caso de error y tener en cuenta el torpedo ilimitado.
+
+### Cómo elige la máquina dónde disparar
+
+- **Decisión:** La máquina dispara siempre un torpedo, a un punto **al azar entre las celdas a las que todavía no disparó**. Para ella, el agua sin explorar y las naves ocultas se ven igual, como para una persona.
+- **Caso especial:** Cuando ya disparó a todas las celdas, elige al azar entre las que quedaron con impacto (`X`). Si no, nunca le daría el segundo impacto a las celdas del portaaviones y la partida podría no terminar.
+- **Alternativa descartada:** Usar la flota del rival para saber dónde están las naves. Sería hacer trampa.
+- **Dificultad:** `nueva_partida_vs_maquina` ya recibe la dificultad y la guarda en la máquina, como pide la consigna. Los dos niveles se implementan en la entrega 3; por ahora hay uno solo.
