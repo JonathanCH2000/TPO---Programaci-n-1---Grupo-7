@@ -4,10 +4,13 @@ from modulos.armamento import crear_municion, disparar, usar_municion
 from modulos.errores import ErrorCubo, ErrorUbicacion
 from modulos.flota import (
     CATALOGO,
+    buscar_nave,
     cantidad_ubicada,
+    celdas_destruidas,
     crear_flota,
     datos_nave,
     flota_hundida,
+    nave_hundida,
     ubicacion_automatica,
     ubicar_nave,
 )
@@ -227,6 +230,8 @@ def _jugar_partida(estado: dict) -> None:
 def _turno_disparar(estado: dict) -> None:
     """Pide la jugada al jugador de turno y la ejecuta. Si no se puede, avisa el motivo
     y el turno no pasa, para que vuelva a intentar."""
+    # Guardar el rival antes de jugar: despues del turno, el turno pasa a el.
+    rival = estado["jugadores"][1 - estado["turno"]]
     jugada = _pedir_jugada()
 
     try:
@@ -235,11 +240,51 @@ def _turno_disparar(estado: dict) -> None:
         print(error)
     else:
         # La jugada recien hecha es la ultima del historial.
-        jugada_hecha = estado["historial"][-1]
+        _mostrar_resultados(rival, estado["historial"][-1])
 
-        # Mostrar el resultado de cada celda que afecto el arma.
-        for punto, resultado in jugada_hecha["resultados"].items():
-            print(f"{punto}: {resultado}")
+
+def _mostrar_resultados(rival: dict, jugada: dict) -> None:
+    """Recibe el rival y la jugada hecha; muestra que paso en cada celda afectada
+    y, si se pego a una nave, como quedo esa nave."""
+    for punto, resultado in jugada["resultados"].items():
+        texto = f"{punto[0]},{punto[1]},{punto[2]}: {MENSAJES_RESULTADO[resultado]}"
+
+        # Si se le pego a una nave, agregar como quedo.
+        nave = buscar_nave(rival["flota"], punto)
+        if nave is not None and resultado in ("impacto", "hundido"):
+            texto += " " + _describir_nave(nave)
+
+        print(texto)
+
+    # El sonar ademas resume cuantos contactos encontro en el plano.
+    if jugada["arma"] == "S":
+        print(
+            f"Sonar sobre el plano {jugada['eje']} = {jugada['valor']}. "
+            f"{len(jugada['resultados'])} contactos detectados."
+        )
+
+
+def _describir_nave(nave: dict) -> str:
+    """Recibe una nave; devuelve un texto con su nombre y si esta averiada o hundida."""
+    modelo_nave = datos_nave(nave["tipo"])
+
+    # El nombre sale del catalogo; si el tipo no estuviera, se muestra su letra.
+    nombre = nave["tipo"] if modelo_nave is None else modelo_nave[1]
+
+    if nave_hundida(nave):
+        return f"Nave hundida: {nombre}."
+
+    return f"Nave averiada: {nombre} ({celdas_destruidas(nave)} de {len(nave['puntos'])})."
+
+
+# Resultado de una celda -> mensaje para el jugador.
+MENSAJES_RESULTADO = {
+    "agua": "Agua.",
+    "impacto": "Impacto.",
+    "hundido": "Impacto.",
+    "repetido": "Ya habias disparado ahi.",
+    "detectado": "Contacto detectado.",
+}
 
 
 def _turno_ver_cubo(estado: dict) -> None:
