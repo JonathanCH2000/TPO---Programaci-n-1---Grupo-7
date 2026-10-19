@@ -7,6 +7,7 @@ from modulos.flota import (
     cantidad_ubicada,
     crear_flota,
     datos_nave,
+    flota_hundida,
     ubicacion_automatica,
     ubicar_nave,
 )
@@ -110,9 +111,16 @@ def turno_maquina(estado: dict) -> dict:
 
 
 def hay_ganador(estado: dict) -> str | None:
-    """Estado → ganador, o ninguno."""
-    # TODO: se implementa en una entrega posterior.
-    print("Todavia no esta implementado")
+    """Recibe el estado; devuelve el nombre del ganador (el que hundio toda la flota
+    del rival), o None si todavia no gano nadie."""
+    for numero in range(len(estado["jugadores"])):
+        jugador = estado["jugadores"][numero]
+        rival = estado["jugadores"][1 - numero]
+
+        # Gana el jugador cuyo rival ya no tiene naves a flote.
+        if flota_hundida(rival["flota"]):
+            return jugador["nombre"]
+
     return None
 
 

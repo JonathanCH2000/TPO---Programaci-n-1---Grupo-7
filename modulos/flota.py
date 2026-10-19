@@ -185,6 +185,16 @@ def nave_hundida(nave: dict) -> bool:
     return celdas_destruidas(nave) == len(nave["puntos"])
 
 
+def flota_hundida(flota: list) -> bool:
+    """Recibe una flota; devuelve True si todas sus naves estan hundidas."""
+    # Alcanza con encontrar una nave a flote para saber que la flota no esta hundida.
+    for nave in flota:
+        if not nave_hundida(nave):
+            return False
+
+    return True
+
+
 def _obtener_puntos(
     tipo: str, desde: tuple, hasta: tuple
 ) -> list[tuple[int, int, int]] | None:
