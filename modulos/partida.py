@@ -11,7 +11,7 @@ from modulos.flota import (
     ubicacion_automatica,
     ubicar_nave,
 )
-from modulos.registro import crear_historial, registrar_jugada
+from modulos.registro import crear_historial, registrar_jugada, resumen
 from modulos.tablero import crear_cubo, dibujar_capa
 
 
@@ -29,7 +29,7 @@ def menu_interactivo() -> None:
         # Ejecutar la opcion elegida. Despues de cada una vuelve a mostrarse el menu.
         match opcion:
             case 1:
-                nueva_partida_1v1()
+                _jugar_partida(nueva_partida_1v1())
             case 2:
                 nueva_partida_vs_maquina()
             case 3:
@@ -215,6 +215,13 @@ def _jugar_partida(estado: dict) -> None:
 
     estado["ganador"] = hay_ganador(estado)
     print(f"Gano {estado['ganador']}.")
+
+    # Mostrar el resumen con las estadisticas de los dos jugadores.
+    nombres = []
+    for jugador in estado["jugadores"]:
+        nombres.append(jugador["nombre"])
+
+    print(resumen(estado["historial"], nombres, estado["ganador"]))
 
 
 def _turno_disparar(estado: dict) -> None:
