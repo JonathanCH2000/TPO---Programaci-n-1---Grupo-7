@@ -288,3 +288,64 @@ def _pedir_punto() -> tuple[int, int, int]:
             return (int(valores[0]), int(valores[1]), int(valores[2]))
 
         print("Ejemplo: 4,2,7")
+
+
+def _pedir_eje(ejes: str) -> str:
+    """Recibe los ejes permitidos (por ejemplo "xy"); pide uno y lo devuelve en minuscula."""
+    # Solo se acepta una de las letras permitidas, por ejemplo [xy].
+    patron = f"[{ejes}]"
+
+    # Repetir hasta que el usuario escriba un eje valido.
+    while True:
+        texto = input(f"Eje ({'/'.join(ejes)}): ").strip().lower()
+
+        if re.fullmatch(patron, texto):
+            return texto
+
+        print("Eje invalido.")
+
+
+def _pedir_valor() -> int:
+    """Pide el valor de un eje y lo devuelve como numero."""
+    # Repetir hasta que el usuario escriba un numero.
+    while True:
+        texto = input("Valor: ").strip()
+
+        if re.fullmatch(r"[0-9]+", texto):
+            return int(texto)
+
+        print("Valor invalido.")
+
+
+def _pedir_jugada() -> dict:
+    """Pide el arma y los datos que necesita; devuelve la jugada (arma, punto, eje y valor)."""
+    arma = _pedir_arma()
+
+    # Buscar que datos pide esa arma. Las que no figuran en el diccionario piden un punto.
+    pedir_datos = DATOS_POR_ARMA.get(arma, _datos_punto)
+    jugada = pedir_datos()
+    jugada["arma"] = arma
+
+    return jugada
+
+
+def _datos_punto() -> dict:
+    """Pide los datos de las armas que solo apuntan a un punto."""
+    return {"punto": _pedir_punto(), "eje": None, "valor": None}
+
+
+def _datos_laser() -> dict:
+    """Pide los datos del barrido laser: un punto y el eje del barrido (x o y)."""
+    return {"punto": _pedir_punto(), "eje": _pedir_eje("xy"), "valor": None}
+
+
+def _datos_sonar() -> dict:
+    """Pide los datos del sonar: el eje del plano (z, x o y) y su valor."""
+    return {"punto": None, "eje": _pedir_eje("zxy"), "valor": _pedir_valor()}
+
+
+# Letra del arma -> funcion que pide sus datos. Las demas armas usan _datos_punto.
+DATOS_POR_ARMA = {
+    "L": _datos_laser,
+    "S": _datos_sonar,
+}
