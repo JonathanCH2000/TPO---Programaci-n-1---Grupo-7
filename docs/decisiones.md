@@ -151,3 +151,9 @@ jugador = {"nombre": "Jugador 1", "es_maquina": False, "cubo": ..., "flota": ...
 - **Caso especial:** Cuando ya disparó a todas las celdas, elige al azar entre las que quedaron con impacto (`X`). Si no, nunca le daría el segundo impacto a las celdas del portaaviones y la partida podría no terminar.
 - **Alternativa descartada:** Usar la flota del rival para saber dónde están las naves. Sería hacer trampa.
 - **Dificultad:** `nueva_partida_vs_maquina` ya recibe la dificultad y la guarda en la máquina, como pide la consigna. Los dos niveles se implementan en la entrega 3; por ahora hay uno solo.
+
+### Los menús se resuelven con diccionarios
+
+- **Decisión:** Cada menú tiene un diccionario opción → función: `OPCIONES_MENU` (menú principal), `FORMAS_DE_UBICAR` (manual o automática), `ACCIONES_TURNO` (disparar o ver el cubo), `DATOS_POR_ARMA` (qué datos pide cada arma).
+- **Por qué:** La consigna prohíbe resolver el despacho de opciones con cadenas de `if` / `elif`. En la entrega 1 usábamos `match`, que en la práctica es lo mismo, así que lo reemplazamos.
+- **La opción "Salir"** no está en el diccionario: es la única que corta el ciclo del menú, así que se resuelve con un `if` antes de buscar en el diccionario.

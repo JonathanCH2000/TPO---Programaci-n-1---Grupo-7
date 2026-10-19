@@ -34,22 +34,27 @@ def menu_interactivo() -> None:
         print("1 - Partida uno contra uno")
         print("2 - Partida uno contra la maquina")
         print("3 - Partida maquina contra maquina")
-        print("4 - Continuar una partida")
+        print("4 - Continuar una partida guardada")
         print("5 - Salir")
         opcion = _pedir_opcion(5)
 
-        # Ejecutar la opcion elegida. Despues de cada una vuelve a mostrarse el menu.
-        match opcion:
-            case 1:
-                _jugar_partida(nueva_partida_1v1())
-            case 2:
-                _jugar_partida(nueva_partida_vs_maquina())
-            case 3:
-                nueva_partida_maquina_vs_maquina()
-            case 4:
-                _continuar_partida()
-            case 5:
-                break
+        # La opcion 5 es la unica que cierra el menu.
+        if opcion == 5:
+            break
+
+        # Buscar la opcion elegida en el diccionario y ejecutarla.
+        # Despues de cada una vuelve a mostrarse el menu.
+        OPCIONES_MENU[opcion]()
+
+
+def _partida_1v1() -> None:
+    """Crea y juega una partida uno contra uno (opcion 1 del menu principal)."""
+    _jugar_partida(nueva_partida_1v1())
+
+
+def _partida_vs_maquina() -> None:
+    """Crea y juega una partida contra la maquina (opcion 2 del menu principal)."""
+    _jugar_partida(nueva_partida_vs_maquina())
 
 
 def nueva_partida_1v1(configuracion: int = 8) -> dict:
@@ -158,52 +163,15 @@ def hay_ganador(estado: dict) -> str | None:
 def _preparar_jugador(numero: int, lado: int) -> dict:
     """Recibe numero de jugador y lado del cubo; ubica su flota y devuelve el jugador:
     un diccionario con su nombre, su cubo, su flota y su municion."""
-    cubo = crear_cubo(lado)
-    flota = crear_flota()
-
-    print(f"--- Jugador {numero} ---")
+    print(f"--- Flota de Jugador {numero} ---")
     print("1 - Ubicacion manual")
     print("2 - Ubicacion automatica")
     opcion = _pedir_opcion(2)
 
-    match opcion:
-        # Ubicacion manual: el jugador elige cada nave y su tramo.
-        case 1:
-            # Contar cuantas naves hay que ubicar en total.
-            total = 0
-
-            for modelo_nave in CATALOGO:
-                total += modelo_nave[3]
-
-            # Repetir hasta que esten todas las naves ubicadas.
-            while len(flota) < total:
-                # Mostrar cuantas faltan de cada tipo.
-                print("--- Naves pendientes ---")
-
-                for modelo_nave in CATALOGO:
-                    faltan = modelo_nave[3] - cantidad_ubicada(flota, modelo_nave[0])
-                    print(f"{modelo_nave[0]} - {modelo_nave[1]} x {faltan}")
-
-                tipo = input("Nave: ").strip().upper()
-
-                # La letra no corresponde a ninguna nave del catalogo.
-                if datos_nave(tipo) is None:
-                    print("Nave invalida.")
-                else:
-                    # Pedir el tramo e intentar ubicar la nave.
-                    desde, hasta = _pedir_tramo()
-                    try:
-                        ubicar_nave(cubo, flota, tipo, desde, hasta)
-                    except ErrorUbicacion as error:
-                        # Mostrar el motivo por el que no se pudo ubicar.
-                        print(f"No se puede ubicar ahi. {error}")
-                    else:
-                        print("Nave ubicada.")
-
-        # Ubicacion automatica: el juego ubica toda la flota al azar.
-        case 2:
-            cubo, flota = _flota_automatica(lado)
-            print("Flota ubicada.")
+    # Buscar la forma de ubicar elegida en el diccionario y usarla.
+    ubicar = FORMAS_DE_UBICAR[opcion]
+    cubo, flota = ubicar(lado)
+    print("Flota ubicada.")
 
     # Le pregunta al usuario si quiere ver varias capas o seguir.
     _ver_cubo(cubo)
@@ -376,6 +344,46 @@ ACCIONES_TURNO = {
     1: _turno_disparar,
     2: _turno_ver_cubo,
 }
+
+
+def _ubicacion_manual(lado: int) -> tuple[list, list]:
+    """Recibe el lado del cubo; el jugador elige cada nave y su tramo hasta ubicar
+    toda la flota. Devuelve (cubo, flota)."""
+    cubo = crear_cubo(lado)
+    flota = crear_flota()
+
+    # Contar cuantas naves hay que ubicar en total.
+    total = 0
+
+    for modelo_nave in CATALOGO:
+        total += modelo_nave[3]
+
+    # Repetir hasta que esten todas las naves ubicadas.
+    while len(flota) < total:
+        # Mostrar cuantas faltan de cada tipo.
+        print("--- Naves pendientes ---")
+
+        for modelo_nave in CATALOGO:
+            faltan = modelo_nave[3] - cantidad_ubicada(flota, modelo_nave[0])
+            print(f"{modelo_nave[0]} - {modelo_nave[1]} x {faltan}")
+
+        tipo = input("Nave: ").strip().upper()
+
+        # La letra no corresponde a ninguna nave del catalogo.
+        if datos_nave(tipo) is None:
+            print("Nave invalida.")
+        else:
+            # Pedir el tramo e intentar ubicar la nave.
+            desde, hasta = _pedir_tramo()
+            try:
+                ubicar_nave(cubo, flota, tipo, desde, hasta)
+            except ErrorUbicacion as error:
+                # Mostrar el motivo por el que no se pudo ubicar.
+                print(f"No se puede ubicar ahi. {error}")
+            else:
+                print("Nave ubicada.")
+
+    return cubo, flota
 
 
 def _preparar_maquina(lado: int, dificultad: int) -> dict:
@@ -563,4 +571,19 @@ def _datos_sonar() -> dict:
 DATOS_POR_ARMA = {
     "L": _datos_laser,
     "S": _datos_sonar,
+}
+
+
+# Opcion del menu principal -> funcion que la ejecuta. La 5 (salir) corta el menu.
+OPCIONES_MENU = {
+    1: _partida_1v1,
+    2: _partida_vs_maquina,
+    3: nueva_partida_maquina_vs_maquina,
+    4: _continuar_partida,
+}
+
+# Opcion del submenu de ubicacion -> funcion que ubica la flota y devuelve (cubo, flota).
+FORMAS_DE_UBICAR = {
+    1: _ubicacion_manual,
+    2: _flota_automatica,
 }
