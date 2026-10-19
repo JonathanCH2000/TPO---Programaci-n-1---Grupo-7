@@ -61,11 +61,22 @@ def nueva_partida_1v1(configuracion: int = 8) -> dict:
     return estado
 
 
-def nueva_partida_vs_maquina() -> None:
-    """Configuración, dificultad → estado inicial de una partida contra la máquina."""
-    # TODO: se implementa en una entrega posterior.
-    print("Todavia no esta implementado")
-    return None
+def nueva_partida_vs_maquina(configuracion: int = 8, dificultad: int = 1) -> dict:
+    """Recibe la configuracion (el lado del cubo) y la dificultad de la maquina;
+    devuelve el estado inicial de una partida de un jugador contra la maquina."""
+    # El jugador ubica su flota; la de la maquina se ubica siempre sola.
+    jugador = _preparar_jugador(1, configuracion)
+    maquina = _preparar_maquina(configuracion, dificultad)
+
+    # Empieza jugando la persona (turno 0).
+    estado = {
+        "jugadores": [jugador, maquina],
+        "turno": 0,
+        "historial": crear_historial(),
+        "ganador": None,
+    }
+
+    return estado
 
 
 def nueva_partida_maquina_vs_maquina() -> None:
@@ -174,13 +185,7 @@ def _preparar_jugador(numero: int, lado: int) -> dict:
 
         # Ubicacion automatica: el juego ubica toda la flota al azar.
         case 2:
-            flota = ubicacion_automatica(cubo, CATALOGO, None)
-
-            # Si no entro toda la flota, empezar de nuevo con un cubo vacio.
-            while flota is None:
-                cubo = crear_cubo(lado)
-                flota = ubicacion_automatica(cubo, CATALOGO, None)
-
+            cubo, flota = _flota_automatica(lado)
             print("Flota ubicada.")
 
     # Le pregunta al usuario si quiere ver varias capas o seguir.
@@ -309,6 +314,37 @@ ACCIONES_TURNO = {
     1: _turno_disparar,
     2: _turno_ver_cubo,
 }
+
+
+def _preparar_maquina(lado: int, dificultad: int) -> dict:
+    """Recibe el lado del cubo y la dificultad; devuelve la maquina con su flota
+    ubicada automaticamente."""
+    cubo, flota = _flota_automatica(lado)
+
+    maquina = {
+        "nombre": "Maquina",
+        "es_maquina": True,
+        "dificultad": dificultad,
+        "cubo": cubo,
+        "flota": flota,
+        "municion": crear_municion(),
+    }
+
+    return maquina
+
+
+def _flota_automatica(lado: int) -> tuple[list, list]:
+    """Recibe el lado del cubo; crea un cubo, ubica toda la flota al azar y devuelve
+    (cubo, flota)."""
+    cubo = crear_cubo(lado)
+    flota = ubicacion_automatica(cubo, CATALOGO, None)
+
+    # Si no entro toda la flota, empezar de nuevo con un cubo vacio.
+    while flota is None:
+        cubo = crear_cubo(lado)
+        flota = ubicacion_automatica(cubo, CATALOGO, None)
+
+    return cubo, flota
 
 
 def _ver_cubo(cubo: list, mostrar_naves: bool = True) -> None:
