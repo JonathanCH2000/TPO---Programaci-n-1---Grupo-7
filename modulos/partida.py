@@ -23,6 +23,8 @@ from modulos.tablero import (
     NAVE,
     crear_cubo,
     dibujar_capa,
+    dibujar_plano_x,
+    dibujar_plano_y,
     leer_celda,
 )
 
@@ -418,17 +420,23 @@ def _flota_automatica(lado: int) -> tuple[list, list]:
 
 
 def _ver_cubo(cubo: list, mostrar_naves: bool = True) -> None:
-    """Muestra las capas del cubo que elija el jugador hasta que decida continuar.
-    Las naves se ven solo si mostrar_naves es True."""
+    """Muestra los cortes del cubo que elija el jugador (capa de z, plano de x o plano
+    de y) hasta que decida continuar. Las naves se ven solo si mostrar_naves es True."""
     while True:
-        # Pedir la capa de z a dibujar.
-        print(f"Capa que quiere ver (1 a: {len(cubo)}):")
-        capa = _pedir_opcion(len(cubo))
+        # Pedir que corte quiere ver.
+        print("1 - Capa de z")
+        print("2 - Plano de x")
+        print("3 - Plano de y")
+        eje, dibujar = CORTES[_pedir_opcion(3)]
 
-        print(dibujar_capa(cubo, capa, mostrar_naves))
+        # Pedir el valor del eje fijo.
+        print(f"Valor de {eje} (1 a {len(cubo)}):")
+        valor = _pedir_opcion(len(cubo))
 
-        # Preguntar si quiere ver otra capa o seguir.
-        print("1 - Ver otra capa")
+        print(dibujar(cubo, valor, mostrar_naves))
+
+        # Preguntar si quiere ver otro corte o seguir.
+        print("1 - Ver otro corte")
         print("2 - Continuar")
         if _pedir_opcion(2) == 2:
             return
@@ -586,4 +594,11 @@ OPCIONES_MENU = {
 FORMAS_DE_UBICAR = {
     1: _ubicacion_manual,
     2: _flota_automatica,
+}
+
+# Opcion del submenu para ver el cubo -> (eje que queda fijo, funcion que dibuja el corte).
+CORTES = {
+    1: ("z", dibujar_capa),
+    2: ("x", dibujar_plano_x),
+    3: ("y", dibujar_plano_y),
 }
