@@ -256,3 +256,35 @@ def _pedir_tramo() -> tuple[tuple[int, int, int], tuple[int, int, int]]:
             return desde, hasta
 
         print("Ejemplo: 3,5,4-3,5,5")
+
+
+def _pedir_arma() -> str:
+    """Pide la letra de un arma y la devuelve en mayuscula."""
+    # Solo se aceptan las letras de las armas del catalogo, en mayuscula o minuscula.
+    patron = r"[TRCSLOG]"
+
+    # Repetir hasta que el usuario escriba una letra valida.
+    while True:
+        texto = input("Arma (T/R/C/S/L/O/G): ").strip().upper()
+
+        if re.fullmatch(patron, texto):
+            return texto
+
+        print("Arma invalida.")
+
+
+def _pedir_punto() -> tuple[int, int, int]:
+    """Pide un punto y lo devuelve como tupla."""
+    # Formato aceptado: z,x,y (por ejemplo 4,2,7).
+    patron = r"[0-9]+,[0-9]+,[0-9]+"
+
+    # Repetir hasta que el usuario escriba un punto con el formato correcto.
+    while True:
+        texto = input("Objetivo (z,x,y): ").strip()
+
+        if re.fullmatch(patron, texto):
+            # Separar los tres valores y pasarlos a numeros.
+            valores = texto.split(",")
+            return (int(valores[0]), int(valores[1]), int(valores[2]))
+
+        print("Ejemplo: 4,2,7")
