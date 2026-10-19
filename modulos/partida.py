@@ -1,7 +1,7 @@
 import re
 
 from modulos.armamento import crear_municion, disparar, usar_municion
-from modulos.errores import ErrorUbicacion
+from modulos.errores import ErrorCubo, ErrorUbicacion
 from modulos.flota import (
     CATALOGO,
     cantidad_ubicada,
@@ -194,15 +194,80 @@ def _preparar_jugador(numero: int, lado: int) -> dict:
     return jugador
 
 
-def _ver_cubo(cubo: list) -> None:
-    """Muestra las capas del cubo que elija el jugador hasta que decida continuar."""
+def _jugar_partida(estado: dict) -> None:
+    """Recibe el estado inicial; alterna los turnos hasta que haya un ganador."""
+    # La consigna pide confirmar antes de empezar.
+    print("Flotas ubicadas.")
+    print("1 - Empezar la partida")
+    _pedir_opcion(1)
+
+    while hay_ganador(estado) is None:
+        jugador = estado["jugadores"][estado["turno"]]
+
+        print(f"--- Turno de {jugador['nombre']} ---")
+        print("1 - Disparar")
+        print("2 - Ver el cubo")
+        opcion = _pedir_opcion(2)
+
+        # Buscar la accion elegida en el diccionario y ejecutarla.
+        accion = ACCIONES_TURNO[opcion]
+        accion(estado)
+
+    estado["ganador"] = hay_ganador(estado)
+    print(f"Gano {estado['ganador']}.")
+
+
+def _turno_disparar(estado: dict) -> None:
+    """Pide la jugada al jugador de turno y la ejecuta. Si no se puede, avisa el motivo
+    y el turno no pasa, para que vuelva a intentar."""
+    jugada = _pedir_jugada()
+
+    try:
+        ejecutar_turno(estado, jugada)
+    except ErrorCubo as error:
+        print(error)
+    else:
+        # La jugada recien hecha es la ultima del historial.
+        jugada_hecha = estado["historial"][-1]
+
+        # Mostrar el resultado de cada celda que afecto el arma.
+        for punto, resultado in jugada_hecha["resultados"].items():
+            print(f"{punto}: {resultado}")
+
+
+def _turno_ver_cubo(estado: dict) -> None:
+    """Muestra al jugador de turno sus disparos (el cubo del rival, sin sus naves)
+    o su propia flota."""
+    jugador = estado["jugadores"][estado["turno"]]
+    rival = estado["jugadores"][1 - estado["turno"]]
+
+    print("1 - Mis disparos")
+    print("2 - Mi flota")
+    opcion = _pedir_opcion(2)
+
+    # Opcion -> (cubo a mostrar, si se ven las naves).
+    cubos = {1: (rival["cubo"], False), 2: (jugador["cubo"], True)}
+    cubo, mostrar_naves = cubos[opcion]
+
+    _ver_cubo(cubo, mostrar_naves)
+
+
+# Opcion del menu del turno -> funcion que la ejecuta.
+ACCIONES_TURNO = {
+    1: _turno_disparar,
+    2: _turno_ver_cubo,
+}
+
+
+def _ver_cubo(cubo: list, mostrar_naves: bool = True) -> None:
+    """Muestra las capas del cubo que elija el jugador hasta que decida continuar.
+    Las naves se ven solo si mostrar_naves es True."""
     while True:
         # Pedir la capa de z a dibujar.
         print(f"Capa que quiere ver (1 a: {len(cubo)}):")
         capa = _pedir_opcion(len(cubo))
 
-        # Dibujar la capa mostrando las naves propias.
-        print(dibujar_capa(cubo, capa, True))
+        print(dibujar_capa(cubo, capa, mostrar_naves))
 
         # Preguntar si quiere ver otra capa o seguir.
         print("1 - Ver otra capa")
