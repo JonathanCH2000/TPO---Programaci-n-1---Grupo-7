@@ -11,3 +11,8 @@ class ErrorUbicacion(ErrorCubo):
 
 class ErrorMunicion(ErrorCubo):
     """Se lanza cuando se quiere usar un arma que no existe o que no tiene municion."""
+
+
+class ErrorJugada(ErrorCubo):
+    """Se lanza cuando una jugada no se puede hacer: el arma no esta disponible
+    o el objetivo esta fuera del cubo."""

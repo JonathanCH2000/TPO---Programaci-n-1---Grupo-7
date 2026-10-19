@@ -1,14 +1,17 @@
 import re
 
+from modulos.armamento import crear_municion, disparar, usar_municion
 from modulos.errores import ErrorUbicacion
 from modulos.flota import (
     CATALOGO,
     cantidad_ubicada,
     crear_flota,
     datos_nave,
+    flota_hundida,
     ubicacion_automatica,
     ubicar_nave,
 )
+from modulos.registro import crear_historial, registrar_jugada
 from modulos.tablero import crear_cubo, dibujar_capa
 
 
@@ -37,13 +40,22 @@ def menu_interactivo() -> None:
                 break
 
 
-def nueva_partida_1v1(configuracion: int = 8) -> list[list]:
-    """Recibe el lado del cubo; devuelve el estado inicial de dos jugadores."""
+def nueva_partida_1v1(configuracion: int = 8) -> dict:
+    """Recibe la configuracion de la partida (por ahora, el lado del cubo: 8 por defecto);
+    devuelve el estado inicial de una partida de dos jugadores."""
     # Cada jugador arma su cubo y ubica su flota.
     jugador_uno = _preparar_jugador(1, configuracion)
     jugador_dos = _preparar_jugador(2, configuracion)
 
-    return [jugador_uno, jugador_dos]
+    # Estado de la partida: empieza jugando el primero de la lista (turno 0).
+    estado = {
+        "jugadores": [jugador_uno, jugador_dos],
+        "turno": 0,
+        "historial": crear_historial(),
+        "ganador": None,
+    }
+
+    return estado
 
 
 def nueva_partida_vs_maquina() -> None:
@@ -61,10 +73,34 @@ def nueva_partida_maquina_vs_maquina() -> None:
 
 
 def ejecutar_turno(estado: dict, jugada: dict) -> dict:
-    """estado, jugada → estado actualizado."""
-    # TODO: se implementa en una entrega posterior.
-    print("Todavia no esta implementado")
-    return {}
+    """Recibe el estado y la jugada del jugador de turno (arma, punto, eje y valor);
+    gasta la municion, dispara al rival, registra la jugada, pasa el turno y devuelve el estado actualizado.
+    Lanza ErrorMunicion si no queda municion y ErrorJugada si la jugada no es valida."""
+    jugador = estado["jugadores"][estado["turno"]]
+    rival = estado["jugadores"][1 - estado["turno"]]
+
+    # Gastar la municion en una copia: si el disparo falla, la original queda intacta.
+    municion = dict(jugador["municion"])
+    usar_municion(municion, jugada["arma"])
+
+    # Disparar al cubo y la flota del rival.
+    resultados = disparar(rival["cubo"], rival["flota"], jugada)
+
+    # El disparo salio bien: recien ahora se guarda el gasto de municion.
+    jugador["municion"] = municion
+
+    registrar_jugada(
+        estado["historial"],
+        jugador["nombre"],
+        jugada["arma"],
+        jugada["punto"],
+        resultados,
+    )
+
+    # Pasar el turno al otro jugador (0 -> 1 o 1 -> 0).
+    estado["turno"] = 1 - estado["turno"]
+
+    return estado
 
 
 def turno_maquina(estado: dict) -> dict:
@@ -75,14 +111,22 @@ def turno_maquina(estado: dict) -> dict:
 
 
 def hay_ganador(estado: dict) -> str | None:
-    """Estado → ganador, o ninguno."""
-    # TODO: se implementa en una entrega posterior.
-    print("Todavia no esta implementado")
+    """Recibe el estado; devuelve el nombre del ganador (el que hundio toda la flota
+    del rival), o None si todavia no gano nadie."""
+    for numero in range(len(estado["jugadores"])):
+        jugador = estado["jugadores"][numero]
+        rival = estado["jugadores"][1 - numero]
+
+        # Gana el jugador cuyo rival ya no tiene naves a flote.
+        if flota_hundida(rival["flota"]):
+            return jugador["nombre"]
+
     return None
 
 
-def _preparar_jugador(numero: int, lado: int) -> list:
-    """Recibe numero de jugador y lado del cubo; devuelve [cubo, flota] con la flota ubicada."""
+def _preparar_jugador(numero: int, lado: int) -> dict:
+    """Recibe numero de jugador y lado del cubo; ubica su flota y devuelve el jugador:
+    un diccionario con su nombre, su cubo, su flota y su municion."""
     cubo = crear_cubo(lado)
     flota = crear_flota()
 
@@ -139,7 +183,15 @@ def _preparar_jugador(numero: int, lado: int) -> list:
     # Le pregunta al usuario si quiere ver varias capas o seguir.
     _ver_cubo(cubo)
 
-    return [cubo, flota]
+    jugador = {
+        "nombre": f"Jugador {numero}",
+        "es_maquina": False,
+        "cubo": cubo,
+        "flota": flota,
+        "municion": crear_municion(),
+    }
+
+    return jugador
 
 
 def _ver_cubo(cubo: list) -> None:

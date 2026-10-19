@@ -52,8 +52,8 @@ Registro de las decisiones que tomamos como grupo, con las alternativas que cons
 ### El barrido láser se saltea las celdas de los submarinos
 
 - **Decisión:** Las celdas de un submarino no se tocan y no aparecen en el resultado del láser.
-- **Alternativa:** Reportarlas como "agua" sin marcarlas.
-- **Contra de la opción elegida:** Un jugador pillo podría notar que "faltan" celdas en el resultado y deducir que ahí hay un submarino. _(Pendiente de confirmar por el grupo.)_
+- **Alternativa descartada:** Reportarlas como "agua". No las oculta, esas celdas no se pueden marcar como agua en el mapa (ahí hay una nave), así que igual quedan sin marcar y se nota el hueco. Para ocultarlas del todo habría que "mentir" también en el cubo, y eso lo complica.
+- **Por qué esta:** Con cualquier opción un jugador atento puede deducir que ahí hay algo, así que elegimos la más simple y honesta: el juego nunca dice "agua" donde no la hay. El submarino es **inmune** al láser, no **invisible**.
 
 ### Munición: un diccionario por jugador
 
@@ -110,3 +110,37 @@ Registro de las decisiones que tomamos como grupo, con las alternativas que cons
 - **Por qué por celdas:** Un racimo que acierta en una celda de siete no es lo mismo que un torpedo que acierta en su única celda. Contando por jugada, los dos serían "un acierto".
 - **Por qué el repetido es fallo:** Es un disparo desperdiciado, así que debe bajar el porcentaje.
 - **Las naves hundidas** se cuentan con los `hundido`: Cada nave hundida produce exactamente un `hundido`, el del impacto que la terminó de hundir.
+
+### Estructura del estado de la partida
+
+```python
+estado = {
+    "jugadores": [jugador_1, jugador_2],
+    "turno": 0,
+    "historial": [],
+    "ganador": None,
+}
+jugador = {"nombre": "Jugador 1", "es_maquina": False, "cubo": ..., "flota": ..., "municion": ...}
+```
+
+- **Decisión:** Cada jugador tiene su propio cubo con sus naves, su flota y su munición. Al disparar se usa el cubo y la flota del **rival**; para ver los disparos propios se dibuja el cubo del rival sin mostrar sus naves.
+- **`"turno"` es un índice (0 o 1):** El jugador actual es `estado["jugadores"][turno]` y el rival `estado["jugadores"][1 - turno]`. Cambiar de turno es `turno = 1 - turno`, sin `if`.
+- **`"es_maquina"`:** Los tres formatos de partida (uno contra uno, contra la máquina, máquina contra máquina) usan el mismo estado; lo único que cambia es quién elige la jugada.
+- **Por qué diccionarios y listas:** Lo pide la consigna, y en la entrega 3 este mismo estado se guarda en JSON.
+- **Alternativa descartada:** Claves fijas `"jugador_1"` y `"jugador_2"`. Para saber quién es el rival habría que preguntar con un `if`.
+
+### Elección del arma con un diccionario y adaptadores
+
+- **Decisión:** `ARMAS` en `armamento.py` asocia cada letra con una función: `{"T": _usar_torpedo, "R": _usar_racimo, ...}`. La función pública `disparar(cubo, flota, jugada)` busca el arma en el diccionario y la usa.
+- **Por qué:** La consigna pide resolver la selección del arma con un diccionario que asocie nombre y función, sin cadenas de `if` / `elif`.
+- **Problema:** Las armas reciben datos distintos (el láser necesita un eje; el sonar, un eje y un valor y ni siquiera la flota). Para guardarlas en el mismo diccionario, todas tienen que recibir lo mismo.
+- **Solución:** Adaptadores chiquitos (`_usar_torpedo`, `_usar_laser`, etc.) con la misma firma `(cubo, flota, jugada)`. Cada uno saca de la jugada lo que necesita su arma. Las armas originales no cambiaron.
+- **El sonar** devuelve una lista de puntos; su adaptador la convierte en `{punto: "detectado"}` para que tenga el mismo formato que las demás.
+- **La onda expansiva y el torpedo guiado** no están en el diccionario hasta la entrega 3; si se eligen, `disparar` lanza `ErrorJugada`.
+
+### En el turno, la munición se gasta en una copia
+
+- **Problema:** Si se gasta la munición y después el disparo falla (arma no disponible u objetivo fuera del cubo), el jugador pierde un uso sin haber disparado. Si se dispara primero y después se gasta, se puede disparar un arma sin munición.
+- **Decisión:** `ejecutar_turno` copia el diccionario de munición, gasta en la copia (si no queda, salta `ErrorMunicion` y no pasa nada), dispara, y **recién si el disparo salió bien** reemplaza la munición del jugador por la copia.
+- **Por qué:** El turno es "todo o nada": o se gasta la munición, se dispara, se registra y pasa el turno, o no cambia nada. Así el jugador puede corregir la jugada y volver a intentar.
+- **Alternativa descartada:** Gastar y, si el disparo falla, "devolver" la munición. Hay que acordarse de devolverla en cada caso de error y tener en cuenta el torpedo ilimitado.
