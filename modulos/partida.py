@@ -1,6 +1,6 @@
 import re
 
-from modulos.armamento import crear_municion
+from modulos.armamento import crear_municion, disparar, usar_municion
 from modulos.errores import ErrorUbicacion
 from modulos.flota import (
     CATALOGO,
@@ -10,7 +10,7 @@ from modulos.flota import (
     ubicacion_automatica,
     ubicar_nave,
 )
-from modulos.registro import crear_historial
+from modulos.registro import crear_historial, registrar_jugada
 from modulos.tablero import crear_cubo, dibujar_capa
 
 
@@ -72,10 +72,34 @@ def nueva_partida_maquina_vs_maquina() -> None:
 
 
 def ejecutar_turno(estado: dict, jugada: dict) -> dict:
-    """estado, jugada → estado actualizado."""
-    # TODO: se implementa en una entrega posterior.
-    print("Todavia no esta implementado")
-    return {}
+    """Recibe el estado y la jugada del jugador de turno (arma, punto, eje y valor);
+    gasta la municion, dispara al rival, registra la jugada, pasa el turno y devuelve el estado actualizado.
+    Lanza ErrorMunicion si no queda municion y ErrorJugada si la jugada no es valida."""
+    jugador = estado["jugadores"][estado["turno"]]
+    rival = estado["jugadores"][1 - estado["turno"]]
+
+    # Gastar la municion en una copia: si el disparo falla, la original queda intacta.
+    municion = dict(jugador["municion"])
+    usar_municion(municion, jugada["arma"])
+
+    # Disparar al cubo y la flota del rival.
+    resultados = disparar(rival["cubo"], rival["flota"], jugada)
+
+    # El disparo salio bien: recien ahora se guarda el gasto de municion.
+    jugador["municion"] = municion
+
+    registrar_jugada(
+        estado["historial"],
+        jugador["nombre"],
+        jugada["arma"],
+        jugada["punto"],
+        resultados,
+    )
+
+    # Pasar el turno al otro jugador (0 -> 1 o 1 -> 0).
+    estado["turno"] = 1 - estado["turno"]
+
+    return estado
 
 
 def turno_maquina(estado: dict) -> dict:

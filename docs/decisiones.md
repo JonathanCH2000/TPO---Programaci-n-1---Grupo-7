@@ -137,3 +137,10 @@ jugador = {"nombre": "Jugador 1", "es_maquina": False, "cubo": ..., "flota": ...
 - **Solución:** Adaptadores chiquitos (`_usar_torpedo`, `_usar_laser`, etc.) con la misma firma `(cubo, flota, jugada)`. Cada uno saca de la jugada lo que necesita su arma. Las armas originales no cambiaron.
 - **El sonar** devuelve una lista de puntos; su adaptador la convierte en `{punto: "detectado"}` para que tenga el mismo formato que las demás.
 - **La onda expansiva y el torpedo guiado** no están en el diccionario hasta la entrega 3; si se eligen, `disparar` lanza `ErrorJugada`.
+
+### En el turno, la munición se gasta en una copia
+
+- **Problema:** Si se gasta la munición y después el disparo falla (arma no disponible u objetivo fuera del cubo), el jugador pierde un uso sin haber disparado. Si se dispara primero y después se gasta, se puede disparar un arma sin munición.
+- **Decisión:** `ejecutar_turno` copia el diccionario de munición, gasta en la copia (si no queda, salta `ErrorMunicion` y no pasa nada), dispara, y **recién si el disparo salió bien** reemplaza la munición del jugador por la copia.
+- **Por qué:** El turno es "todo o nada": o se gasta la munición, se dispara, se registra y pasa el turno, o no cambia nada. Así el jugador puede corregir la jugada y volver a intentar.
+- **Alternativa descartada:** Gastar y, si el disparo falla, "devolver" la munición. Hay que acordarse de devolverla en cada caso de error y tener en cuenta el torpedo ilimitado.
