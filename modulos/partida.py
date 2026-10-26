@@ -44,9 +44,12 @@ def menu_interactivo() -> None:
         if opcion == 5:
             break
 
-        # Buscar la opcion elegida en el diccionario y ejecutarla.
-        # Despues de cada una vuelve a mostrarse el menu.
-        OPCIONES_MENU[opcion]()
+        # Ejecutar la opcion elegida.
+        # Si ocurre un error del juego, avisar y volver al menu.
+        try:
+            OPCIONES_MENU[opcion]()
+        except ErrorCubo as error:
+            print(error)
 
 
 def _partida_1v1() -> None:
@@ -125,6 +128,8 @@ def ejecutar_turno(estado: dict, jugada: dict) -> dict:
         jugada["arma"],
         jugada["punto"],
         resultados,
+        jugada["eje"],
+        jugada["valor"],
     )
 
     # Pasar el turno al otro jugador (0 -> 1 o 1 -> 0).
@@ -406,17 +411,20 @@ def _preparar_maquina(lado: int, dificultad: int) -> dict:
 
 
 def _flota_automatica(lado: int) -> tuple[list, list]:
-    """Recibe el lado del cubo; crea un cubo, ubica toda la flota al azar y devuelve
-    (cubo, flota)."""
-    cubo = crear_cubo(lado)
-    flota = ubicacion_automatica(cubo, CATALOGO, None)
-
-    # Si no entro toda la flota, empezar de nuevo con un cubo vacio.
-    while flota is None:
+    """Recibe el lado y devuelve el cubo con la flota ubicada.
+    Lanza ErrorUbicacion si no logra completar la flota."""
+    maximo = 50
+    # Intentar armar toda la flota hasta llegar al maximo.
+    for intento in range(maximo):
         cubo = crear_cubo(lado)
         flota = ubicacion_automatica(cubo, CATALOGO, None)
-
-    return cubo, flota
+        # Si se pudo completar, devolver el cubo y la flota.
+        if flota is not None:
+            return cubo, flota
+    # Se agotaron los intentos sin completar la flota.
+    raise ErrorUbicacion(
+        "No se pudo ubicar toda la flota. Intente iniciar otra partida."
+    )
 
 
 def _ver_cubo(cubo: list, mostrar_naves: bool = True) -> None:

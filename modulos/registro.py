@@ -4,8 +4,7 @@ def crear_historial() -> list:
 
 
 def registrar_jugada(
-    historial: list, jugador: str, arma: str, punto: tuple, resultados: dict
-) -> list[dict]:
+    historial: list, jugador: str, arma: str, punto: tuple, resultados: dict, eje: str | None = None, valor: int |None = None) -> list[dict]:
     """Recibe el historial, quien jugo, la letra del arma, el punto y el diccionario punto -> resultado que devolvio el arma.
     Agrega la jugada al final del historial y lo devuelve."""
     # El numero de turno es la cantidad de jugadas que ya hay mas 1.
@@ -17,7 +16,10 @@ def registrar_jugada(
         "jugador": jugador,
         "arma": arma,
         "punto": punto,
+        "eje": eje,
+        "valor":valor,
         "resultados": resultados,
+
     }
 
     # Agregar la jugada al final del historial.
