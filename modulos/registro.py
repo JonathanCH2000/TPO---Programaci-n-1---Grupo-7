@@ -1,3 +1,8 @@
+import json
+import re
+
+from modulos.errores import ErrorCubo
+
 def crear_historial() -> list:
     """Devuelve una lista vacia para guardar las jugadas de la partida."""
     return []
@@ -102,19 +107,140 @@ def resumen(historial: list, jugadores: list[str], ganador: str | None) -> str:
     return texto
 
 
+def _leer_partidas() -> dict:
+    """Lee las partidas guardadas y devuelve un diccionario.
+    Lanza ErrorCubo si no se puede leer o el contenido no es valido."""
+    try:
+        with open("datos/partidas.json", "r", encoding="utf-8") as archivo:
+            partidas = json.load(archivo)
+
+    except FileNotFoundError:
+        # Antes del primer guardado todavia no existe el archivo.
+        partidas = {}
+
+    except (ValueError, UnicodeError):
+        raise ErrorCubo("El archivo de partidas no contiene datos validos.")
+
+    except OSError:
+        raise ErrorCubo("No se pudo leer el archivo de partidas.")
+
+    if not isinstance(partidas, dict):
+        raise ErrorCubo("El archivo de partidas debe contener un diccionario.")
+
+    return partidas
+
 def guardar_partida(estado: dict, nombre: str) -> None:
-    """estado, nombre → archivo escrito."""
-    # TODO: se implementa en otra entrega.
-    return None
+    """Guarda la partida.
+    Lanza ErrorCubo si el nombre no es valido o no se puede guardar."""
+    if re.fullmatch(r"[a-zA-Z0-9_-]{1,30}", nombre) is None:
+        raise ErrorCubo(
+            "Use de 1 a 30 letras sin acentos, numeros, guion o guion bajo."
+        )
+
+    partidas = _leer_partidas()
+
+    # Preparar los datos sin modificar la partida en memoria.
+    datos = dict(estado)
+    datos["jugadores"] = []
+    datos["historial"] = []
+
+    for jugador in estado["jugadores"]:
+        jugador_guardado = dict(jugador)
+        jugador_guardado["flota"] = []
+
+        for nave in jugador["flota"]:
+            nave_guardada = dict(nave)
+
+            nave_guardada["puntos"] = list(nave["puntos"])
+
+            # Guardar cada punto junto a su cantidad de impactos.
+            impactos = []
+
+            for punto, cantidad in nave["impactos"].items():
+                impactos.append([punto, cantidad])
+
+            nave_guardada["impactos"] = impactos
+            jugador_guardado["flota"].append(nave_guardada)
+
+        datos["jugadores"].append(jugador_guardado)
+
+    for jugada in estado["historial"]:
+        jugada_guardada = dict(jugada)
+        resultados = []
+
+        for punto, resultado in jugada["resultados"].items():
+            resultados.append([punto, resultado])
+
+        jugada_guardada["resultados"] = resultados
+        datos["historial"].append(jugada_guardada)
+
+    # Si el nombre existe actualiza esa partida.
+    partidas[nombre] = datos
+
+    try:
+        # Convertir antes de abrir el archivo para escribir.
+        texto = json.dumps(partidas, indent=4)
+
+        with open("datos/partidas.json", "w", encoding="utf-8") as archivo:
+            archivo.write(texto)
+
+    except (TypeError, ValueError):
+        raise ErrorCubo("La partida contiene datos que no se pueden guardar.")
+
+    except OSError:
+        raise ErrorCubo(
+            "No se pudo guardar. Compruebe que exista la carpeta datos."
+        )
 
 
 def cargar_partida(nombre: str) -> dict:
-    """nombre → estado, o excepción."""
-    # TODO: se implementa en otra entrega.
-    return {}
+    """Recupera una partida y reconstruye sus conjuntos y tuplas."""
+    partidas = _leer_partidas()
 
+    if nombre not in partidas:
+        raise ErrorCubo("No existe una partida con ese nombre.")
+    estado = partidas[nombre]
+
+    try:
+        if len(estado["jugadores"]) != 2 or estado["turno"] not in (0, 1):
+            raise ErrorCubo("Los jugadores o el turno guardado no son validos.")
+
+        for jugador in estado["jugadores"]:
+            if len(jugador["cubo"]) == 0 or len(jugador["flota"]) == 0:
+                raise ErrorCubo("El cubo o la flota estan vacios.")
+
+            for nave in jugador["flota"]:
+                # Recupera el conjunto de puntos de la nave.
+                puntos = set()
+
+                for punto in nave["puntos"]:
+                    puntos.add(tuple(punto))
+
+                nave["puntos"] = puntos
+                # Recupera el diccionario de impactos.
+                impactos = {}
+
+                for punto, cantidad in nave["impactos"]:
+                    impactos[tuple(punto)] = cantidad
+                nave["impactos"] = impactos
+
+        for jugada in estado["historial"]:
+            if jugada["punto"] is not None:
+                jugada["punto"] = tuple(jugada["punto"])
+            resultados = {}
+
+            for punto, resultado in jugada["resultados"]:
+                resultados[tuple(punto)] = resultado
+            jugada["resultados"] = resultados
+
+    except (KeyError, TypeError, ValueError):
+        raise ErrorCubo("La partida tiene datos incompletos o invalidos.")
+    return estado
 
 def listar_partidas() -> list[str]:
-    """→ nombres de las partidas guardadas."""
-    # TODO: se implementa en otra entrega.
-    return []
+    """Devuelve los nombres de las partidas guardadas"""
+    partidas = _leer_partidas()
+    nombres = list(partidas)
+    nombres.sort()
+
+    return nombres
