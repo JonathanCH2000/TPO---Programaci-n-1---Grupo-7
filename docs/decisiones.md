@@ -167,3 +167,10 @@ jugador = {"nombre": "Jugador 1", "es_maquina": False, "cubo": ..., "flota": ...
 - **Cuando se entrega:** Solamente con el impacto que termina de hundir la estacion. Los impactos anteriores y los disparos repetidos no dan municion.
 - **Como se aplica:** Se suma 1 a la municion del arma R del jugador que realizo el disparo.
 
+### Onda expansiva
+
+- **Decision:** La onda comienza con radio 2 y se propaga por vecinos ortogonales. Cada paso reduce el radio en 1.
+- **Por que:** La consigna pide una propagacion recursiva con radio decreciente, pero no fija el radio inicial. Elegimos 2 para diferenciarla del misil de racimo.
+- **Limite:** Cuando el radio llega a cero, la celda recibe el disparo y no sigue propagando.
+- **Disparos:** Cada celda recibe un solo disparo por uso del arma, aunque pueda alcanzarse por varios caminos.
+- **Bordes:** Solo se recorren las celdas que estan dentro del cubo.

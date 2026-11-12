@@ -146,6 +146,31 @@ def barrido_laser(
 
     return resultados
 
+def onda_expansiva(cubo: list, flota: list, punto: tuple) -> dict | None:
+    """Recibe el cubo, la flota y el punto inicial.
+    Devuelve los resultados de una onda de radio 2, o None si el punto no es valido."""
+    if not punto_valido(cubo, punto):
+        return None
+    resultados = []
+    # Guardar un resultado por cada celda alcanzada.
+    resultados = {}
+    _propagar_onda(cubo, flota, punto, 2, resultados)
+    return resultados
+
+
+def _propagar_onda(
+    cubo: list, flota: list, punto: tuple, radio: int, resultados: dict) -> None:
+    """Dispara una vez por celda y continua por los vecinos.
+    La propagacion termina cuando el radio llega a cero."""
+    # Una celda puede alcanzarse por distintos caminos.
+    if punto not in resultados:
+        resultados[punto] = _disparar_celda(cubo, flota, punto)
+    # Caso base: esta celda recibe el disparo, pero no propaga mas.
+    if radio == 0:
+        return
+    # Caso recursivo: avanzar a los vecinos con un paso menos disponible.
+    for vecino in puntos_vecinos(cubo, punto):
+        _propagar_onda(cubo, flota, vecino, radio - 1, resultados)
 
 def disparar(cubo: list, flota: list, jugada: dict) -> dict[tuple[int, int, int], str]:
     """Recibe el cubo y la flota del rival y una jugada (arma, punto, eje y valor);
@@ -180,6 +205,9 @@ def _usar_carga(cubo: list, flota: list, jugada: dict) -> dict | None:
     """Usa la carga de profundidad sobre el punto de la jugada."""
     return carga_profundidad(cubo, flota, jugada["punto"])
 
+def _usar_onda(cubo: list, flota: list, jugada: dict) -> dict | None:
+    """Usa la onda expansiva desde el punto de la jugada."""
+    return onda_expansiva(cubo, flota, jugada["punto"])
 
 def _usar_laser(cubo: list, flota: list, jugada: dict) -> dict | None:
     """Usa el barrido laser sobre el punto y el eje de la jugada."""
@@ -210,6 +238,7 @@ ARMAS = {
     "C": _usar_carga,
     "L": _usar_laser,
     "S": _usar_sonar,
+    "O": _usar_onda,
 }
 
 
