@@ -15,6 +15,7 @@ from modulos.flota import (
     ubicacion_automatica,
     ubicar_nave,
     NAVES_QUE_REVELAN,
+    PREMIOS_POR_HUNDIMIENTO,
 )
 from modulos.registro import (
     cargar_partida,
@@ -167,6 +168,16 @@ def ejecutar_turno(estado: dict, jugada: dict) -> dict:
                 if encontrado is not None:
                     escribir_celda(jugador["cubo"], encontrado, DETECTADO)
                     revelados.append(encontrado)
+                    
+    # Entrega el premio solamente cuando la estacion orbital termina de hundirse.
+    premios = []
+    for punto, resultado in resultados.items():
+        if resultado == "hundido":
+            nave = buscar_nave(rival["flota"], punto)
+            if nave is not None and nave["tipo"] in PREMIOS_POR_HUNDIMIENTO:
+                arma, cantidad = PREMIOS_POR_HUNDIMIENTO[nave["tipo"]]
+                jugador["municion"][arma] += cantidad
+                premios.append((arma, cantidad))
 
     registrar_jugada(
         estado["historial"],
@@ -180,6 +191,8 @@ def ejecutar_turno(estado: dict, jugada: dict) -> dict:
     
     # Guardar las celdas reveladas como efecto del destructor.
     estado["historial"][-1]["revelados"] = revelados
+    
+    estado["historial"][-1]["premios"] = premios
 
     # Pasar el turno al otro jugador (0 -> 1 o 1 -> 0).
     estado["turno"] = 1 - estado["turno"]
@@ -351,6 +364,13 @@ def _mostrar_resultados(rival: dict, jugada: dict) -> None:
         print(
             f"{rival['nombre']}: tu destructor revelo una celda del rival "
             f"en {punto[0]},{punto[1]},{punto[2]}."
+        )
+        
+    # Informa la municion extra que recibio quien disparo.
+    for arma, cantidad in jugada.get("premios", []):
+        print(
+            f"{jugada['jugador']} recibe {cantidad} de municion "
+            f"del arma {arma} por hundir la estacion orbital."
         )
 
 

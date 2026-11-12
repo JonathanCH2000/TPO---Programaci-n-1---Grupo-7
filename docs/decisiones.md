@@ -157,3 +157,13 @@ jugador = {"nombre": "Jugador 1", "es_maquina": False, "cubo": ..., "flota": ...
 - **Decisión:** Cada menú tiene un diccionario opción → función: `OPCIONES_MENU` (menú principal), `FORMAS_DE_UBICAR` (manual o automática), `ACCIONES_TURNO` (disparar o ver el cubo), `DATOS_POR_ARMA` (qué datos pide cada arma).
 - **Por qué:** La consigna prohíbe resolver el despacho de opciones con cadenas de `if` / `elif`. En la entrega 1 usábamos `match`, que en la práctica es lo mismo, así que lo reemplazamos.
 - **La opción "Salir"** no está en el diccionario: es la única que corta el ciclo del menú, así que se resuelve con un `if` antes de buscar en el diccionario.
+
+## Entrega 3
+
+### Municion extra de la estacion orbital
+
+- **Decision:** El jugador que hunde la estacion orbital del rival recibe un misil de racimo adicional.
+- **Por que:** La consigna indica que otorga municion extra, pero no especifica quien la recibe, de que arma ni cuanta. Elegimos un misil de racimo porque tiene municion limitada y ya esta implementado.
+- **Cuando se entrega:** Solamente con el impacto que termina de hundir la estacion. Los impactos anteriores y los disparos repetidos no dan municion.
+- **Como se aplica:** Se suma 1 a la municion del arma R del jugador que realizo el disparo.
+

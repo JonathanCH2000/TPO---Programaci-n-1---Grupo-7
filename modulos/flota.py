@@ -23,6 +23,10 @@ CATALOGO = [
 IMPACTOS_POR_CELDA = {"P": 2}
 # Revela una celda del rival al recibir un impacto (DESTRUCTOR)
 NAVES_QUE_REVELAN = {"D"}
+# Premio al hundir estacion orbital -> arma y cantidad que recibe quien la hunde.
+PREMIOS_POR_HUNDIMIENTO = {
+    "E": ("R", 1),
+}
 
 
 def ubicar_nave(

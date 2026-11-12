@@ -88,3 +88,21 @@ Acierto: 7.5 %
 
 ----------------------------------------
 
+===== RESUMEN DE LA PARTIDA =====
+Turnos jugados: 1039
+Ganador: Maquina 1
+
+--- Maquina 1 ---
+Jugadas: 520
+Celdas disparadas: 520 (agua 477, impacto 30, hundido 10, repetido 3)
+Naves hundidas: 10
+Acierto: 7.7 %
+
+--- Maquina 2 ---
+Jugadas: 519
+Celdas disparadas: 519 (agua 477, impacto 30, hundido 9, repetido 3)
+Naves hundidas: 9
+Acierto: 7.5 %
+
+----------------------------------------
+
