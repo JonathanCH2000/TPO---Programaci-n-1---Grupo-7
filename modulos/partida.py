@@ -67,6 +67,10 @@ def _partida_1v1() -> None:
 def _partida_vs_maquina() -> None:
     """Crea y juega una partida contra la maquina (opcion 2 del menu principal)."""
     _jugar_partida(nueva_partida_vs_maquina())
+    
+def _partida_maquinas() -> None:
+    """Crea y juega una partida entre dos maquinas."""
+    _jugar_partida(nueva_partida_maquina_vs_maquina())
 
 
 def nueva_partida_1v1(configuracion: int = 8) -> dict:
@@ -105,11 +109,25 @@ def nueva_partida_vs_maquina(configuracion: int = 8, dificultad: int = 1) -> dic
     return estado
 
 
-def nueva_partida_maquina_vs_maquina() -> None:
-    """Configuración, dificultades → estado inicial de una partida entre dos máquinas."""
-    # TODO: se implementa en una entrega posterior.
-    print("Todavia no esta implementado")
-    return None
+def nueva_partida_maquina_vs_maquina(
+    configuracion: int = 8, dificultades: tuple = (1, 1)
+) -> dict:
+    """Recibe el lado del cubo y las dificultades de las dos maquinas"""
+    # Cada maquina tiene su propio cubo, flota y municion.
+    maquina_uno = _preparar_maquina(configuracion, dificultades[0])
+    maquina_dos = _preparar_maquina(configuracion, dificultades[1])
+
+    # Diferencia las maquinas en los turnos y las estadisticas.
+    maquina_uno["nombre"] = "Maquina 1"
+    maquina_dos["nombre"] = "Maquina 2"
+
+    estado = {
+        "jugadores": [maquina_uno, maquina_dos],
+        "turno": 0,
+        "historial": crear_historial(),
+        "ganador": None,
+    }
+    return estado
 
 
 def ejecutar_turno(estado: dict, jugada: dict) -> dict:
@@ -658,7 +676,7 @@ DATOS_POR_ARMA = {
 OPCIONES_MENU = {
     1: _partida_1v1,
     2: _partida_vs_maquina,
-    3: nueva_partida_maquina_vs_maquina,
+    3: _partida_maquinas,
     4: _continuar_partida,
 }
 
