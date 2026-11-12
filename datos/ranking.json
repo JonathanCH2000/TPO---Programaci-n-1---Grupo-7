@@ -1,0 +1,23 @@
+[
+    {
+        "partida": 1,
+        "ganador": "Maquina 2",
+        "acierto": 7.7,
+        "jugadas": 520,
+        "turnos": 1040
+    },
+    {
+        "partida": 2,
+        "ganador": "Maquina 1",
+        "acierto": 7.7,
+        "jugadas": 522,
+        "turnos": 1043
+    },
+    {
+        "partida": 3,
+        "ganador": "Maquina 1",
+        "acierto": 7.7,
+        "jugadas": 518,
+        "turnos": 1035
+    }
+]

@@ -259,3 +259,56 @@ def exportar_resumen(historial: list, jugadores: list[str], ganador: str | None)
         raise ErrorCubo(
             "No se pudo exportar el resumen. Compruebe la carpeta datos."
         )
+        
+
+def leer_ranking() -> list:
+    """Devuelve los resultados ordenados por acierto y cantidad de jugadas.
+    Lanza ErrorCubo si no puede leer el archivo o sus datos son invalidos."""
+    try:
+        with open("datos/ranking.json", "r", encoding="utf-8") as archivo:
+            ranking = json.load(archivo)
+    except FileNotFoundError:
+        ranking = []
+    except (ValueError, UnicodeError):
+        raise ErrorCubo("El archivo del ranking no contiene datos validos.")
+    except OSError:
+        raise ErrorCubo("No se pudo leer el ranking.")
+    if not isinstance(ranking, list):
+        raise ErrorCubo("El ranking debe contener una lista.")
+    try:
+        # Mayor cantidad de aciertosy hay En empate gana el que tenga menos jugadas.
+        ranking.sort(
+            key=lambda dato: (-dato["acierto"], dato["jugadas"])
+        )
+    except (KeyError, TypeError):
+        raise ErrorCubo("El ranking tiene datos incompletos o invalidos.")
+    return ranking
+
+
+def registrar_resultado(estado: dict) -> None:
+    """Agrega el resultado de una partida terminada al ranking.
+    Lanza ErrorCubo si no hay ganador o no se puede guardar."""
+    ganador = estado["ganador"]
+
+    if ganador is None:
+        raise ErrorCubo("No se puede registrar una partida sin ganador.")
+
+    ranking = leer_ranking()
+    datos = estadisticas(estado["historial"], ganador)
+
+    resultado = {
+        "partida": len(ranking) + 1,
+        "ganador": ganador,
+        "acierto": datos["acierto"],
+        "jugadas": datos["jugadas"],
+        "turnos": len(estado["historial"]),
+    }
+    ranking.append(resultado)
+
+    try:
+        with open("datos/ranking.json", "w", encoding="utf-8") as archivo:
+            json.dump(ranking, archivo, indent=4)
+    except OSError:
+        raise ErrorCubo(
+            "No se pudo guardar el ranking. Compruebe la carpeta datos."
+        )

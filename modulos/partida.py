@@ -20,8 +20,10 @@ from modulos.registro import (
     crear_historial,
     exportar_resumen,
     guardar_partida,
+    leer_ranking,
     listar_partidas,
     registrar_jugada,
+    registrar_resultado,
     resumen,
 )
 from modulos.tablero import (
@@ -46,7 +48,8 @@ def menu_interactivo() -> None:
         print("3 - Partida maquina contra maquina")
         print("4 - Continuar una partida guardada")
         print("5 - Salir")
-        opcion = _pedir_opcion(5)
+        print("6 - Ver ranking")
+        opcion = _pedir_opcion(6)
 
         # La opcion 5 es la unica que cierra el menu.
         if opcion == 5:
@@ -255,6 +258,15 @@ def _jugar_partida(estado: dict, confirmar: bool = True) -> None:
 
     estado["ganador"] = hay_ganador(estado)
     print(f"Gano {estado['ganador']}.")
+    
+    # Registrar solamente las partidas que terminaron con un ganador.
+    try:
+        registrar_resultado(estado)
+    except ErrorCubo as error:
+        print(error)
+    else:
+        print("Resultado agregado al ranking.")
+    
     nombres = []
 
     for jugador in estado["jugadores"]:
@@ -688,6 +700,31 @@ DATOS_POR_ARMA = {
     "S": _datos_sonar,
 }
 
+def _mostrar_ranking() -> None:
+    """Muestra los resultados guardados, ordenados por rendimiento."""
+    try:
+        ranking = leer_ranking()
+    except ErrorCubo as error:
+        print(error)
+        return
+
+    if len(ranking) == 0:
+        print("Todavia no hay resultados guardados.")
+        return
+    print("===== RANKING DE PARTIDAS =====")
+
+    for posicion in range(len(ranking)):
+        resultado = ranking[posicion]
+        print(
+            f"{posicion + 1} - Partida {resultado['partida']} "
+            f"- Ganador: {resultado['ganador']}"
+        )
+        print(
+            f"Acierto: {resultado['acierto']} % "
+            f"- Jugadas del ganador: {resultado['jugadas']} "
+            f"- Turnos totales: {resultado['turnos']}"
+        )
+        print()
 
 # Opcion del menu principal -> funcion que la ejecuta. La 5 (salir) corta el menu.
 OPCIONES_MENU = {
@@ -695,6 +732,7 @@ OPCIONES_MENU = {
     2: _partida_vs_maquina,
     3: _partida_maquinas,
     4: _continuar_partida,
+    6: _mostrar_ranking,
 }
 
 # Opcion del submenu de ubicacion -> funcion que ubica la flota y devuelve (cubo, flota).
