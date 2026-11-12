@@ -15,7 +15,14 @@ from modulos.flota import (
     ubicacion_automatica,
     ubicar_nave,
 )
-from modulos.registro import crear_historial, registrar_jugada, resumen
+from modulos.registro import (
+    cargar_partida,
+    crear_historial,
+    guardar_partida,
+    listar_partidas,
+    registrar_jugada,
+    resumen,
+)
 from modulos.tablero import (
     AGUA,
     DETECTADO,
@@ -194,39 +201,45 @@ def _preparar_jugador(numero: int, lado: int) -> dict:
     return jugador
 
 
-def _jugar_partida(estado: dict) -> None:
+def _jugar_partida(estado: dict, confirmar: bool = True) -> None:
     """Recibe el estado inicial; alterna los turnos hasta que haya un ganador."""
+    
+    estado["salir"] = False
     # La consigna pide confirmar antes de empezar.
-    print("Flotas ubicadas.")
-    print("1 - Empezar la partida")
-    _pedir_opcion(1)
+    if confirmar:
+        print("Flotas ubicadas.")
+        print("1 - Empezar la partida")
+        _pedir_opcion(1)
 
-    while hay_ganador(estado) is None:
+    while hay_ganador(estado) is None and not estado["salir"]:
         jugador = estado["jugadores"][estado["turno"]]
 
         print(f"--- Turno de {jugador['nombre']} ---")
 
-        # La maquina juega sola; la persona elige en el menu del turno.
+        # La maquina juega sola
         if jugador["es_maquina"]:
             _turno_de_maquina(estado)
             continue
 
         print("1 - Disparar")
         print("2 - Ver el cubo")
-        opcion = _pedir_opcion(2)
+        print("3 - Guardar y salir")
+        opcion = _pedir_opcion(3)
 
         # Buscar la accion elegida en el diccionario y ejecutarla.
         accion = ACCIONES_TURNO[opcion]
         accion(estado)
 
+    # Si se guardo la partida, volver al menu principal.
+    if estado["salir"]:
+        return
+
     estado["ganador"] = hay_ganador(estado)
     print(f"Gano {estado['ganador']}.")
-
-    # Mostrar el resumen con las estadisticas de los dos jugadores.
     nombres = []
+
     for jugador in estado["jugadores"]:
         nombres.append(jugador["nombre"])
-
     print(resumen(estado["historial"], nombres, estado["ganador"]))
 
 
@@ -345,11 +358,34 @@ def _turno_ver_cubo(estado: dict) -> None:
 
     _ver_cubo(cubo, mostrar_naves)
 
+def _guardar_y_salir(estado: dict) -> None:
+    """Guarda la partida y vuelve al menu principal."""
+    nombre = estado.get("nombre_partida", "")
+    try:
+        # Partida nueva
+        if nombre == "":
+            nombre = input("Nombre de la partida: ").strip()
+
+            if nombre in listar_partidas():
+                print("Ya existe una partida con ese nombre.")
+                print("1 - Reemplazar")
+                print("2 - Cancelar")
+                if _pedir_opcion(2) == 2:
+                    return
+        guardar_partida(estado, nombre)
+    except ErrorCubo as error:
+        print(error)
+    else:
+        # Recordar el nombre solamente si se pudo guardar.
+        estado["nombre_partida"] = nombre
+        estado["salir"] = True
+        print(f"Partida guardada: {nombre}.")
 
 # Opcion del menu del turno -> funcion que la ejecuta.
 ACCIONES_TURNO = {
     1: _turno_disparar,
     2: _turno_ver_cubo,
+    3: _guardar_y_salir,
 }
 
 
@@ -451,9 +487,37 @@ def _ver_cubo(cubo: list, mostrar_naves: bool = True) -> None:
 
 
 def _continuar_partida() -> None:
-    """Retoma una partida guardada (opcion 4 del menu principal)."""
-    # TODO: se implementa en otra entrega.
-    print("Todavia no esta implementado")
+    """Muestra las partidas guardadas y permite continuar una."""
+    try:
+        partidas = listar_partidas()
+    except ErrorCubo as error:
+        print(error)
+        return
+
+    if len(partidas) == 0:
+        print("No hay partidas guardadas.")
+        return
+    print("--- Partidas guardadas ---")
+
+    for numero in range(len(partidas)):
+        print(f"{numero + 1} - {partidas[numero]}")
+
+    volver = len(partidas) + 1
+    print(f"{volver} - Volver")
+    opcion = _pedir_opcion(volver)
+
+    if opcion == volver:
+        return
+    nombre = partidas[opcion - 1]
+
+    try:
+        estado = cargar_partida(nombre)
+    except ErrorCubo as error:
+        print(error)
+    else:
+        estado["nombre_partida"] = nombre
+        print("Partida cargada.")
+        _jugar_partida(estado, confirmar=False)
 
 
 def _pedir_opcion(maximo: int) -> int:
