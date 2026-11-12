@@ -18,6 +18,7 @@ from modulos.flota import (
 from modulos.registro import (
     cargar_partida,
     crear_historial,
+    exportar_resumen,
     guardar_partida,
     listar_partidas,
     registrar_jugada,
@@ -259,6 +260,22 @@ def _jugar_partida(estado: dict, confirmar: bool = True) -> None:
     for jugador in estado["jugadores"]:
         nombres.append(jugador["nombre"])
     print(resumen(estado["historial"], nombres, estado["ganador"]))
+    #consulta para realizar la exportacion
+    print("Desea exportar el resumen?")
+    print("1 - Si")
+    print("2 - No")
+    opcion = _pedir_opcion(2)
+    if opcion == 1:
+        try:
+            exportar_resumen(
+                estado["historial"],
+                nombres,
+                estado["ganador"],
+            )
+        except ErrorCubo as error:
+            print(error)
+        else:
+            print("Resumen exportado en datos/resumenes.txt.")
 
 
 def _turno_disparar(estado: dict) -> None:

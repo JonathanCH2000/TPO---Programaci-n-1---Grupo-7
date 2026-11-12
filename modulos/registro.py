@@ -244,3 +244,18 @@ def listar_partidas() -> list[str]:
     nombres.sort()
 
     return nombres
+
+def exportar_resumen(historial: list, jugadores: list[str], ganador: str | None) -> None:
+    """Recibe el historial, los jugadores y el ganador.
+    Agrega el resumen a un archivo. Lanza ErrorCubo si no puede escribir."""
+    # Reutiliza el resumen que ya se muestra al terminar.
+    texto = resumen(historial, jugadores, ganador)
+    try:
+        with open("datos/resumenes.txt", "a", encoding="utf-8") as archivo:
+            archivo.write(texto)
+            # Separa este resumen del siguiente.
+            archivo.write("\n" + "-" * 40 + "\n\n")
+    except OSError:
+        raise ErrorCubo(
+            "No se pudo exportar el resumen. Compruebe la carpeta datos."
+        )
