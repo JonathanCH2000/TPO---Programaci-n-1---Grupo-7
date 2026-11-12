@@ -21,6 +21,8 @@ CATALOGO = [
 
 # Impactos que necesita cada celda para quedar destruida. Las naves que no figuran necesitan 1.
 IMPACTOS_POR_CELDA = {"P": 2}
+# Revela una celda del rival al recibir un impacto (DESTRUCTOR)
+NAVES_QUE_REVELAN = {"D"}
 
 
 def ubicar_nave(

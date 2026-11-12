@@ -14,6 +14,7 @@ from modulos.flota import (
     nave_hundida,
     ubicacion_automatica,
     ubicar_nave,
+    NAVES_QUE_REVELAN,
 )
 from modulos.registro import (
     cargar_partida,
@@ -36,7 +37,10 @@ from modulos.tablero import (
     dibujar_plano_x,
     dibujar_plano_y,
     leer_celda,
+    escribir_celda,
 )
+
+from modulos.radar import busqueda_lineal
 
 
 def menu_interactivo() -> None:
@@ -150,6 +154,19 @@ def ejecutar_turno(estado: dict, jugada: dict) -> dict:
 
     # El disparo salio bien: recien ahora se guarda el gasto de municion.
     jugador["municion"] = municion
+    
+    # Cada impacto nuevo en un destructor revela una celda del atacante.
+    revelados = []
+    for punto, resultado in resultados.items():
+        if resultado in ("impacto", "hundido"):
+            nave = buscar_nave(rival["flota"], punto)
+            if nave is not None and nave["tipo"] in NAVES_QUE_REVELAN:
+                encontrado, metricas = busqueda_lineal(
+                    jugador["cubo"], NAVE
+                )
+                if encontrado is not None:
+                    escribir_celda(jugador["cubo"], encontrado, DETECTADO)
+                    revelados.append(encontrado)
 
     registrar_jugada(
         estado["historial"],
@@ -160,6 +177,9 @@ def ejecutar_turno(estado: dict, jugada: dict) -> dict:
         jugada["eje"],
         jugada["valor"],
     )
+    
+    # Guardar las celdas reveladas como efecto del destructor.
+    estado["historial"][-1]["revelados"] = revelados
 
     # Pasar el turno al otro jugador (0 -> 1 o 1 -> 0).
     estado["turno"] = 1 - estado["turno"]
@@ -324,6 +344,13 @@ def _mostrar_resultados(rival: dict, jugada: dict) -> None:
         print(
             f"Sonar sobre el plano {jugada['eje']} = {jugada['valor']}. "
             f"{len(jugada['resultados'])} contactos detectados."
+        )
+        
+    # Informa al defensor las celdas que revelo su destructor.
+    for punto in jugada.get("revelados", []):
+        print(
+            f"{rival['nombre']}: tu destructor revelo una celda del rival "
+            f"en {punto[0]},{punto[1]},{punto[2]}."
         )
 
 
