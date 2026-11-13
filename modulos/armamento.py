@@ -172,6 +172,52 @@ def _propagar_onda(
     for vecino in puntos_vecinos(cubo, punto):
         _propagar_onda(cubo, flota, vecino, radio - 1, resultados)
 
+def torpedo_guiado(cubo: list, flota: list) -> dict[tuple[int, int, int], str]:
+    """Recibe el cubo y la flota del rival; busca una nave averiada que todavia no este
+    hundida y dispara a una celda contigua de esa nave que siga a flote.
+    Devuelve un diccionario punto -> resultado.
+    Lanza ErrorJugada si el rival no tiene ninguna nave averiada sin hundir."""
+    for nave in flota:
+        # Solo sirven las naves que ya recibieron algun impacto y todavia no se hundieron.
+        if nave_hundida(nave) or len(nave["impactos"]) == 0:
+            continue
+
+        # Empezar la busqueda desde cada celda ya impactada de esa nave.
+        for impactado in nave["impactos"]:
+            objetivo = _buscar_contigua(cubo, nave, impactado, set())
+
+            if objetivo is not None:
+                return {objetivo: _disparar_celda(cubo, flota, objetivo)}
+
+    raise ErrorJugada("No hay un impacto previo sobre una nave que no este hundida.")
+
+def _buscar_contigua(
+    cubo: list, nave: dict, punto: tuple, visitados: set
+) -> tuple[int, int, int] | None:
+    """Recibe el cubo, una nave, un punto de esa nave y el conjunto de puntos ya revisados;
+    busca de forma recursiva una celda contigua de la nave que todavia no este destruida.
+    Devuelve ese punto, o None si no encuentra ninguna."""
+    # Marcar el punto como revisado para no volver a pasar por el.
+    visitados.add(punto)
+
+    for vecino in puntos_vecinos(cubo, punto):
+        # Solo interesan las celdas de la misma nave que todavia no se revisaron.
+        if vecino not in nave["puntos"] or vecino in visitados:
+            continue
+
+        # Caso base: celda contigua que sigue a flote.
+        if not celda_destruida(nave, vecino):
+            return vecino
+
+        # Caso recursivo: la celda ya esta destruida, seguir buscando a partir de ella.
+        encontrado = _buscar_contigua(cubo, nave, vecino, visitados)
+
+        if encontrado is not None:
+            return encontrado
+
+    # Ningun vecino sirvio: esta rama no encontro nada.
+    return None
+
 def disparar(cubo: list, flota: list, jugada: dict) -> dict[tuple[int, int, int], str]:
     """Recibe el cubo y la flota del rival y una jugada (arma, punto, eje y valor);
     usa el arma elegida y devuelve un diccionario punto -> resultado.
@@ -232,6 +278,11 @@ def _usar_sonar(cubo: list, flota: list, jugada: dict) -> dict | None:
 
 # Letra del arma -> funcion que la usa. La onda expansiva (O) y el torpedo guiado (G)
 # se agregan en la entrega 3.
+
+def _usar_guiado(cubo: list, flota: list, jugada: dict) -> dict | None:
+    """Usa el torpedo guiado. No necesita punto: busca solo a partir de los impactos previos."""
+    return torpedo_guiado(cubo, flota)
+
 ARMAS = {
     "T": _usar_torpedo,
     "R": _usar_racimo,
@@ -239,6 +290,7 @@ ARMAS = {
     "L": _usar_laser,
     "S": _usar_sonar,
     "O": _usar_onda,
+    "G": _usar_guiado,
 }
 
 
