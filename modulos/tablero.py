@@ -253,3 +253,58 @@ def _dibujar_plano(
         dibujo += "\n"
 
     return dibujo
+
+
+def recorrido_capas(cubo: list) -> list[tuple[int, int, int]]:
+    """Recibe el cubo; devuelve todos sus puntos recorridos capa por capa:
+    cada z de 1 a N y, dentro de cada capa, cada x y cada y."""
+    puntos = []
+    lado = len(cubo)
+
+    # Primero z, despues x y despues y.
+    for z in range(1, lado + 1):
+        for x in range(1, lado + 1):
+            for y in range(1, lado + 1):
+                puntos.append((z, x, y))
+
+    return puntos
+
+def recorrido_espiral(cubo: list) -> list[tuple[int, int, int]]:
+    """Recibe el cubo; devuelve todos sus puntos recorriendo cada capa de z en espiral
+    (de afuera hacia adentro sobre x e y), una capa despues de la otra."""
+    puntos = []
+    lado = len(cubo)
+
+    for z in range(1, lado + 1):
+        # Limites de la zona que falta recorrer dentro de esta capa.
+        arriba = 1
+        abajo = lado
+        izquierda = 1
+        derecha = lado
+
+        while arriba <= abajo and izquierda <= derecha:
+            # Borde de arriba: de izquierda a derecha.
+            for x in range(izquierda, derecha + 1):
+                puntos.append((z, x, arriba))
+
+            # Borde de la derecha: de arriba a abajo.
+            for y in range(arriba + 1, abajo + 1):
+                puntos.append((z, derecha, y))
+
+            # Borde de abajo: de derecha a izquierda (solo si queda mas de una fila).
+            if arriba < abajo:
+                for x in range(derecha - 1, izquierda - 1, -1):
+                    puntos.append((z, x, abajo))
+
+            # Borde de la izquierda: de abajo a arriba (solo si queda mas de una columna).
+            if izquierda < derecha:
+                for y in range(abajo - 1, arriba, -1):
+                    puntos.append((z, izquierda, y))
+
+            # Pasar al anillo de adentro.
+            arriba += 1
+            abajo -= 1
+            izquierda += 1
+            derecha -= 1
+
+    return puntos
