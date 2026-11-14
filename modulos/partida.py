@@ -7,6 +7,7 @@ from modulos.flota import (
     CATALOGO,
     buscar_nave,
     cantidad_ubicada,
+    celda_destruida,
     celdas_destruidas,
     crear_flota,
     datos_nave,
@@ -41,7 +42,7 @@ from modulos.tablero import (
     escribir_celda,
 )
 
-from modulos.radar import busqueda_lineal
+from modulos.radar import busqueda_lineal, mapa_probabilidad, puntos_mas_probables
 
 
 def menu_interactivo() -> None:
@@ -73,13 +74,25 @@ def _partida_1v1() -> None:
     _jugar_partida(nueva_partida_1v1())
 
 
+def _pedir_dificultad(nombre: str) -> int:
+    """Recibe el nombre de la maquina; pide su nivel y devuelve 1 (facil) o 2 (dificil)."""
+    print(f"--- Nivel de {nombre} ---")
+    print("1 - Facil: dispara al azar")
+    print("2 - Dificil: usa probabilidades y torpedo guiado")
+
+    return _pedir_opcion(2)
+
+
 def _partida_vs_maquina() -> None:
     """Crea y juega una partida contra la maquina (opcion 2 del menu principal)."""
-    _jugar_partida(nueva_partida_vs_maquina())
-    
+    dificultad = _pedir_dificultad("la maquina")
+    _jugar_partida(nueva_partida_vs_maquina(8, dificultad))
+
+
 def _partida_maquinas() -> None:
     """Crea y juega una partida entre dos maquinas."""
-    _jugar_partida(nueva_partida_maquina_vs_maquina())
+    dificultades = (_pedir_dificultad("Maquina 1"), _pedir_dificultad("Maquina 2"))
+    _jugar_partida(nueva_partida_maquina_vs_maquina(8, dificultades))
 
 
 def nueva_partida_1v1(configuracion: int = 8) -> dict:
@@ -201,18 +214,97 @@ def ejecutar_turno(estado: dict, jugada: dict) -> dict:
 
 
 def turno_maquina(estado: dict) -> dict:
-    """Recibe el estado con la maquina de turno; elige un objetivo, dispara un torpedo
+    """Recibe el estado con la maquina de turno; elige su jugada segun su dificultad
     y devuelve el estado actualizado."""
+    maquina = estado["jugadores"][estado["turno"]]
     rival = estado["jugadores"][1 - estado["turno"]]
 
-    jugada = {
+    # Buscar en el diccionario como juega ese nivel. Si no figura, juega como el nivel 1.
+    elegir_jugada = ELEGIR_JUGADA.get(maquina.get("dificultad", 1), _jugada_nivel_1)
+    jugada = elegir_jugada(maquina, rival)
+
+    return ejecutar_turno(estado, jugada)
+
+
+def _jugada_nivel_1(maquina: dict, rival: dict) -> dict:
+    """Nivel 1: torpedo a un punto al azar al que todavia no se disparo."""
+    return {
         "arma": "T",
         "punto": _objetivo_al_azar(rival["cubo"]),
         "eje": None,
         "valor": None,
     }
 
-    return ejecutar_turno(estado, jugada)
+
+def _jugada_nivel_2(maquina: dict, rival: dict) -> dict:
+    """Nivel 2: usa el torpedo guiado si le queda y el rival tiene una nave averiada. Si no,
+    termina de destruir las celdas que necesitan otro impacto y, si no hay, tira un torpedo
+    al punto mas probable segun el mapa de probabilidad."""
+    # Una nave averiada y un torpedo guiado disponible: dejar que busque solo.
+    if maquina["municion"].get("G", 0) > 0 and _hay_nave_averiada(rival["flota"]):
+        return {"arma": "G", "punto": None, "eje": None, "valor": None}
+
+    # Celdas de naves a flote que ya recibieron un impacto pero necesitan otro (portaaviones).
+    pendientes = _celdas_pendientes(rival["flota"])
+
+    if len(pendientes) > 0:
+        punto = random.choice(pendientes)
+    else:
+        # Elegir entre los puntos mas probables segun las naves que todavia siguen a flote.
+        mapa = mapa_probabilidad(rival["cubo"], _largos_restantes(rival["flota"]))
+        candidatos = puntos_mas_probables(mapa)
+
+        # Si no queda ninguna celda sin disparar, jugar como el nivel 1.
+        if len(candidatos) == 0:
+            punto = _objetivo_al_azar(rival["cubo"])
+        else:
+            punto = random.choice(candidatos)
+
+    return {"arma": "T", "punto": punto, "eje": None, "valor": None}
+
+
+def _hay_nave_averiada(flota: list) -> bool:
+    """Recibe la flota del rival; devuelve True si alguna nave tiene impactos y no esta hundida."""
+    for nave in flota:
+        if len(nave["impactos"]) > 0 and not nave_hundida(nave):
+            return True
+
+    return False
+
+
+def _celdas_pendientes(flota: list) -> list[tuple[int, int, int]]:
+    """Recibe la flota del rival; devuelve las celdas ya impactadas de naves a flote
+    que todavia no estan destruidas (necesitan otro impacto)."""
+    pendientes = []
+
+    for nave in flota:
+        if nave_hundida(nave):
+            continue
+
+        for punto in nave["impactos"]:
+            if not celda_destruida(nave, punto):
+                pendientes.append(punto)
+
+    return pendientes
+
+
+def _largos_restantes(flota: list) -> list[int]:
+    """Recibe la flota del rival; devuelve el largo de cada nave en linea que sigue a flote
+    (la estacion orbital es un bloque, no una linea, por eso no cuenta)."""
+    largos = []
+
+    for nave in flota:
+        if not nave_hundida(nave) and nave["tipo"] != "E":
+            largos.append(len(nave["puntos"]))
+
+    return largos
+
+
+# Nivel de dificultad -> funcion que elige la jugada de la maquina.
+ELEGIR_JUGADA = {
+    1: _jugada_nivel_1,
+    2: _jugada_nivel_2,
+}
 
 
 def hay_ganador(estado: dict) -> str | None:
@@ -405,7 +497,13 @@ def _turno_de_maquina(estado: dict) -> None:
     jugada = estado["historial"][-1]
 
     punto = jugada["punto"]
-    print(f"Dispara a {punto[0]},{punto[1]},{punto[2]}.")
+
+    # El torpedo guiado no tiene punto: busca solo.
+    if punto is None:
+        print("Usa el torpedo guiado.")
+    else:
+        print(f"Dispara a {punto[0]},{punto[1]},{punto[2]}.")
+
     _mostrar_resultados(rival, jugada)
 
 
@@ -740,11 +838,15 @@ def _datos_sonar() -> dict:
     """Pide los datos del sonar: el eje del plano (z, x o y) y su valor."""
     return {"punto": None, "eje": _pedir_eje("zxy"), "valor": _pedir_valor()}
 
+def _datos_guiado() -> dict:
+    """Pide los datos del torpedo guiado: ninguno, busca solo a partir de los impactos previos."""
+    return {"punto": None, "eje": None, "valor": None}
 
 # Letra del arma -> funcion que pide sus datos. Las demas armas usan _datos_punto.
 DATOS_POR_ARMA = {
     "L": _datos_laser,
     "S": _datos_sonar,
+    "G": _datos_guiado,
 }
 
 def _mostrar_ranking() -> None:
