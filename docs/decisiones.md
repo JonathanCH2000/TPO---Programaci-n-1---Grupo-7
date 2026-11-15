@@ -174,3 +174,9 @@ jugador = {"nombre": "Jugador 1", "es_maquina": False, "cubo": ..., "flota": ...
 - **Limite:** Cuando el radio llega a cero, la celda recibe el disparo y no sigue propagando.
 - **Disparos:** Cada celda recibe un solo disparo por uso del arma, aunque pueda alcanzarse por varios caminos.
 - **Bordes:** Solo se recorren las celdas que estan dentro del cubo.
+
+### Tamano del tablero
+
+Antes de iniciar una partida se permite elegir el lado del cubo.
+Si no se modifica se utiliza 8 como minimo y tamaño predetermiinado para conservar el tamano base del juego.
+La misma eleccion se aplica a los tres modos de partida.

@@ -68,10 +68,34 @@ def menu_interactivo() -> None:
         except ErrorCubo as error:
             print(error)
 
+def _pedir_tamano() -> int:
+    """Permite elegir el lado del cubo. El minimo y el predeterminado son 8."""
+    print("Desea elegir el tamano del tablero?")
+    print("1 - Si")
+    print("2 - No")
+
+    if _pedir_opcion(2) == 2:
+        return 8
+
+    while True:
+        texto = input("Tamano del tablero (minimo 8): ").strip()
+        if re.fullmatch(r"[0-9]+", texto):
+            try:
+                lado = int(texto)
+            except ValueError:
+                print("El numero ingresado es demasiado largo.")
+            else:
+                if lado >= 8:
+                    return lado
+
+                print("El tamano minimo es 8.")
+        else:
+            print("Ingrese un numero entero.")
 
 def _partida_1v1() -> None:
-    """Crea y juega una partida uno contra uno (opcion 1 del menu principal)."""
-    _jugar_partida(nueva_partida_1v1())
+    """Pide el tamanio y crea una partida uno contra uno"""
+    lado = _pedir_tamano()
+    _jugar_partida(nueva_partida_1v1(lado))
 
 
 def _pedir_dificultad(nombre: str) -> int:
@@ -84,15 +108,20 @@ def _pedir_dificultad(nombre: str) -> int:
 
 
 def _partida_vs_maquina() -> None:
-    """Crea y juega una partida contra la maquina (opcion 2 del menu principal)."""
+    """Pide el tamanio , la dificultad y crea una partida contra la maquina"""
+    lado = _pedir_tamano()
     dificultad = _pedir_dificultad("la maquina")
-    _jugar_partida(nueva_partida_vs_maquina(8, dificultad))
+    _jugar_partida(nueva_partida_vs_maquina(lado, dificultad))
 
 
 def _partida_maquinas() -> None:
-    """Crea y juega una partida entre dos maquinas."""
-    dificultades = (_pedir_dificultad("Maquina 1"), _pedir_dificultad("Maquina 2"))
-    _jugar_partida(nueva_partida_maquina_vs_maquina(8, dificultades))
+    """Pide el tamano , los niveles y crea una partida entre maquinas."""
+    lado = _pedir_tamano()
+    dificultades = (
+        _pedir_dificultad("Maquina 1"),
+        _pedir_dificultad("Maquina 2"),
+    )
+    _jugar_partida(nueva_partida_maquina_vs_maquina(lado, dificultades))
 
 
 def nueva_partida_1v1(configuracion: int = 8) -> dict:
@@ -704,8 +733,8 @@ def _continuar_partida() -> None:
 
     try:
         estado = cargar_partida(nombre)
-    except ErrorCubo as error:
-        print(error)
+    except ErrorCubo:
+        print("No se pudo cargar la partida. Compruebe que el archivo sea accesible y tenga datos validos.")
     else:
         estado["nombre_partida"] = nombre
         print("Partida cargada.")

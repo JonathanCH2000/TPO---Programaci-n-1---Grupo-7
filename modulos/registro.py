@@ -206,9 +206,30 @@ def cargar_partida(nombre: str) -> dict:
             raise ErrorCubo("Los jugadores o el turno guardado no son validos.")
 
         for jugador in estado["jugadores"]:
+            # Revisa los datos basicos sean validos y esten dentro de lo que se permite en el juego
+            if not isinstance(jugador["nombre"], str):
+                raise ErrorCubo("El nombre del jugador no es valido.")
+            if jugador["nombre"].strip() == "":
+                raise ErrorCubo("El nombre del jugador esta vacio.")
+            if not isinstance(jugador["es_maquina"], bool):
+                raise ErrorCubo("El tipo de jugador no es valido.")
+            if not isinstance(jugador["municion"], dict):
+                raise ErrorCubo("La municion no es valida.")
+            if jugador["municion"]["T"] != "ilimitada":
+                raise ErrorCubo("La municion del torpedo no es valida.")
+            for arma in ("R", "C", "S", "L", "O", "G"):
+                cantidad = jugador["municion"][arma]
+                if not isinstance(cantidad, int):
+                    raise ErrorCubo("La cantidad de municion no es valida.")
+                if cantidad < 0:
+                    raise ErrorCubo("La municion no puede ser negativa.")
+            if not isinstance(jugador["cubo"], list):
+                raise ErrorCubo("El cubo no es valido.")
+            if not isinstance(jugador["flota"], list):
+                raise ErrorCubo("La flota no es valida.")
             if len(jugador["cubo"]) == 0 or len(jugador["flota"]) == 0:
                 raise ErrorCubo("El cubo o la flota estan vacios.")
-
+            
             for nave in jugador["flota"]:
                 # Recupera el conjunto de puntos de la nave.
                 puntos = set()
