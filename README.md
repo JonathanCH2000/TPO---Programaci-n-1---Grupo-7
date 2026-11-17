@@ -5,8 +5,9 @@ El tablero es un cubo de 8 x 8 x 8 (modificable) y cada jugador (humano o comput
 
 ## Requisitos
 
-- Python 3.10 o más nuevo.
-- No hace falta instalar nada más, el juego usa solo la biblioteca estándar de Python.
+- Python 3.10 o mas nuevo
+- Para jugar se utiliza solamente la biblioteca estandar de Python
+- Para ejecutar las pruebas se necesita pytest
 
 ## Cómo ejecutarlo
 
@@ -23,17 +24,28 @@ python main.py
 ```
 main.py            Punto de entrada del juego
 modulos/
-    tablero.py     El cubo: creación, validación de puntos, celdas, vecinos, capas y planos, dibujo
-    flota.py       Catálogo de naves, ubicación manual y automática, reglas de ubicación, impactos y hundimiento
-    radar.py       Búsqueda lineal y optimizada con métricas, sonar por planos
-    armamento.py   Catálogo de armas, torpedo, misil de racimo, carga de profundidad, barrido láser, munición
-    registro.py    Historial de la partida, estadísticas y resumen final
-    errores.py     Excepciones propias del juego (todas heredan de ErrorCubo)
-    partida.py     Menús y submenús, ciclo de turnos, partidas uno contra uno y contra la máquina
+    tablero.py     Creacion del cubo, validacion de puntos, celdas, capas, planos y recorridos
+    flota.py       Catalogo de naves, ubicacion, restricciones, impactos y hundimiento
+    radar.py       Busquedas lineal, optimizada y recursiva, sonar, recorridos y mapa de probabilidad
+    armamento.py   Catalogo de armas, disparos, onda expansiva, torpedo guiado y municion
+    registro.py    Historial, estadisticas, guardado y carga, exportacion y ranking
+    errores.py     Excepciones propias del juego
+    partida.py     Menus, preparacion de partidas, turnos y niveles de maquina
+datos/
+    partidas.json  Partidas guardadas
+    ranking.json   Resultados del ranking
+    resumenes.txt  Resumenes exportados
+test/
+    test_armamento_guiado.py    Pruebas del torpedo guiado
+    test_flota.py              Pruebas de ubicacion y restricciones
+    test_partida_maquina.py    Pruebas de los niveles de maquina
+    test_radar.py              Pruebas de busquedas y mapa de probabilidad
+    test_registro.py           Pruebas de historial y estadisticas
+    test_tablero_recorridos.py Pruebas de recorridos
 docs/
-    bitacora.md    Quién trabajó en qué, por entrega
-    decisiones.md  Decisiones de diseño y por qué las tomamos
-```
+    bitacora.md    Responsables y tareas por entrega
+    decisiones.md Decisiones de diseño del grupo
+    ```
 
 ## Cómo se escriben los puntos
 
@@ -53,9 +65,10 @@ Cada celda del cubo se indica con tres números separados por comas, en el orden
 3 - Partida maquina contra maquina
 4 - Continuar una partida guardada
 5 - Salir
+6 - Ver ranking
 ```
 
-El menú vuelve a aparecer después de cada opción y solo se cierra con la opción 5. Funcionan las opciones 1 y 2; las opciones 3 y 4 se implementan en la entrega 3.
+Las opciones 3 y 4 permiten jugar maquina contra maquina y continuar una partida guardada. La opcion 6 muestra el ranking. La opcion 5 cierra el programa
 
 ### Ubicación de la flota
 
@@ -118,6 +131,7 @@ Con las dos flotas ubicadas, el juego pide confirmación para empezar y alterna 
 --- Turno de Jugador 1 ---
 1 - Disparar
 2 - Ver el cubo
+3 - Guardar y salir
 ```
 
 **Disparar:** se elige el arma por su letra y después el objetivo. Cada arma pide lo que necesita:
@@ -145,7 +159,12 @@ Si no queda munición del arma, o el objetivo está fuera del cubo, el juego avi
 
 **Ver el cubo:** "Mis disparos" muestra el cubo del rival sin sus naves (solo agua marcada, impactos, hundidos y detectados); "Mi flota" muestra el cubo propio con las naves.
 
-**Contra la máquina:** la máquina juega sola, dispara torpedos y muestra dónde disparó y qué pasó.
+**Contra la maquina:** antes de empezar se elige su dificultad
+
+- **Nivel 1:** dispara torpedos a puntos elegidos al azar entre las celdas pendientes de explorar
+- **Nivel 2:** utiliza el torpedo guiado cuando tiene municion y hay una nave averiada. Si no, intenta completar celdas que todavia necesitan impactos y luego elige objetivos con el mapa de probabilidad
+
+La maquina muestra el arma utilizada y el resultado de su turno
 
 Gana el primero que hunde toda la flota rival. Al terminar se muestra un resumen con las estadísticas de cada jugador (jugadas, celdas disparadas, naves hundidas y porcentaje de acierto).
 
@@ -158,8 +177,8 @@ Gana el primero que hunde toda la flota rival. Al terminar se muestra un resumen
 | Carga de profundidad | C     | 2         | Toda la recta sobre el eje z que pasa por el punto apuntado          |
 | Sonar                | S     | 4         | No daña: revela las naves de un plano entero (se elige eje y valor)  |
 | Barrido láser        | L     | 2         | Una recta completa sobre el eje x o el eje y, a elección             |
-| Onda expansiva       | O     | 1         | Entrega 3                                                            |
-| Torpedo guiado       | G     | 1         | Entrega 3                                                            |
+| Onda expansiva | O | 1 | Se propaga por vecinos ortogonales con radio inicial 2, aplicando un disparo por celda |
+| Torpedo guiado | G | 1 | Busca de forma recursiva una celda contigua de una nave averiada que todavia no este hundida |
 
 ## Flota
 
@@ -168,7 +187,7 @@ Gana el primero que hunde toda la flota rival. Al terminar se muestra un resumen
 | Fragata          | F     | 2            | 3        | Sin restricción                      |
 | Destructor       | D     | 3            | 2        | Sin restricción                      |
 | Submarino        | S     | 3            | 2        | Solo en la mitad inferior de z       |
-| Crucero          | C     | 4            | 1        | No puede ocupar z = 1 ni z = 8       |
+| Crucero          | C     | 4            | 1        | No puede ocupar z = 1 ni z = N      |
 | Portaaviones     | P     | 5            | 1        | Solo en la mitad superior de z       |
 | Estación orbital | E     | bloque 2x2x2 | 1        | No puede tocar ninguna cara del cubo |
 
@@ -178,10 +197,68 @@ Reglas para todas las naves:
 - No pueden salirse del cubo.
 - Entre dos naves tiene que quedar al menos una celda libre, también en diagonal.
 
-Tomamos como mitad inferior las capas z = 1 a 4 y como mitad superior las capas z = 5 a 8.
+La mitad inferior comprende las capas de z = 1 a N // 2 y la superior, las restantes. Con N = 8, corresponden a las capas 1 a 4 y 5 a 8
 
 Comportamientos propios:
 
 - **Portaaviones:** cada celda necesita dos impactos para quedar destruida.
 - **Submarino:** el barrido láser no lo alcanza.
+- **Destructor:** al recibir un nuevo impacto revela una celda ocupada del rival de su propietario
+- **Estacion orbital:** quien la hunde recibe un misil de racimo adicional. El premio se entrega una sola vez, al terminar de hundirla
 
+## Tamano del tablero
+
+Antes de iniciar una partida se pregunta si se desea elegir el tamano del cubo
+Si no se modifica, se utiliza 8 x 8 x 8. El grupo establece tambien 8 como tamano minimo
+El valor elegido se aplica a los tres modos de partida. Al continuar una partida guardada se conserva su tamano original
+
+## Guardar y continuar una partida
+
+Durante el turno de una persona, la opcion 3 permite guardar y salir al menu principal
+Al guardar una partida nueva se pide un nombre de entre 1 y 30 caracteres. Se permiten letras sin acentos, numeros, guion y guion bajo
+Si el nombre ya existe, se solicita confirmacion antes de reemplazarla
+La opcion 4 del menu principal muestra las partidas guardadas y permite elegir una para continuar. Se recuperan el turno, los cubos, las flotas, la municion y el historial
+
+Al volver a guardar una partida cargada se conserva su nombre
+Si no se puede cargar, se muestra un mensaje y se vuelve al menu
+
+## Partida maquina contra maquina
+
+La opcion 3 del menu principal crea dos maquinas con sus propias flotas y municion
+Las maquinas alternan sus turnos y el juego muestra los resultados de los disparos. Gana la primera que hunde toda la flota rival
+Se puede elegir un nivel diferente para cada maquina
+
+## Exportacion del resumen
+
+Al terminar una partida se muestra el resumen y se pregunta si se desea exportarlo
+Los resumenes se agregan a datos/resumenes.txt sin borrar los anteriores
+
+## Ranking
+
+La opcion 6 del menu principal permite consultar los resultados guardados en datos/ranking.json
+El ranking se ordena por mayor porcentaje de acierto. Si hay empate, se prioriza la menor cantidad de jugadas
+
+## Archivos de datos
+
+La carpeta datos debe existir dentro del proyecto
+
+- datos/partidas.json guarda las partidas que se pueden continuar
+- datos/resumenes.txt conserva los resumenes exportados
+- datos/ranking.json guarda los resultados del ranking
+
+## Pruebas
+
+Las pruebas se encuentran en la carpeta test y se ejecutan con pytest
+
+Para instalar pytest:
+```bash
+python -m pip install pytest
+```
+
+Desde la carpeta que contiene main.py, ejecutar:
+
+```bash
+python -m pytest test -q
+```
+
+Se agregaron pruebas de registro y de las reglas de ubicacion de la flota, junto con las pruebas de los otros integrantes

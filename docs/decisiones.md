@@ -177,6 +177,66 @@ jugador = {"nombre": "Jugador 1", "es_maquina": False, "cubo": ..., "flota": ...
 
 ### Tamano del tablero
 
-Antes de iniciar una partida se permite elegir el lado del cubo.
-Si no se modifica se utiliza 8 como minimo y tamaño predetermiinado para conservar el tamano base del juego.
-La misma eleccion se aplica a los tres modos de partida.
+- **Decision:** Antes de iniciar una partida se permite elegir el lado del cubo
+- **Predeterminado:** Si no se elige otro tamano, se utiliza 8
+- **Minimo:** El grupo establece 8 como minimo para conservar el tamano base del juego
+- **Aplicacion:** Se utiliza en los tres modos de partida. Al continuar una partida se conserva el tamano guardado
+
+### Guardado y carga de partidas
+
+- **Decision:** Las partidas se guardan en datos/partidas.json, identificadas por su nombre
+- **Por que:** Permite conservar varias partidas y continuarlas despues de cerrar el programa
+- **Conversion:** Los conjuntos y las tuplas se convierten en listas. Los diccionarios con puntos como claves se convierten en listas de pares
+- **Carga:** Se reconstruyen las estructuras necesarias para continuar la partida sin perder el turno, la flota, la municion ni el historial
+
+### Nombre y reemplazo de partidas
+
+- **Decision:** Se pide un nombre al guardar una partida nueva
+- **Validacion:** Se aceptan entre 1 y 30 caracteres, usando letras sin acentos, numeros, guion o guion bajo
+- **Reemplazo:** Si el nombre ya existe, se solicita confirmacion antes de reemplazar la partida
+- **Continuacion:** Al cargar una partida se conserva su nombre para los siguientes guardados
+
+### Validaciones al cargar
+
+- **Decision:** Se comprueban los datos basicos del jugador, la municion, el cubo y la flota
+- **Por que:** Un archivo puede tener un formato JSON correcto y contener datos incompletos o invalidos
+- **Error:** Si la carga falla, se muestra un mensaje y se vuelve al menu sin eliminar la partida
+- **Alcance:** Estas validaciones no comprueban todas las reglas de ubicacion ni toda la estructura interna del cubo
+
+### Exportacion del resumen
+
+- **Decision:** Al terminar una partida se permite exportar su resumen a datos/resumenes.txt
+- **Por que:** Permite consultar los resultados despues de cerrar el juego
+- **Escritura:** Los nuevos resumenes se agregan al final del archivo sin borrar los anteriores
+
+### Ranking
+
+- **Decision:** Los resultados de las partidas terminadas se guardan en datos/ranking.json
+- **Orden:** Se prioriza el mayor porcentaje de acierto y, en caso de empate, la menor cantidad de jugadas
+- **Consulta:** El ranking se muestra desde la opcion 6 del menu principal
+
+### Partida maquina contra maquina
+
+- **Decision:** Se crean dos maquinas con nombres distintos y se reutiliza el ciclo de turnos existente
+- **Por que:** Los disparos, la municion, el historial y la victoria se resuelven de la misma forma que en los otros modos
+
+### Comportamiento del destructor
+
+- **Decision:** Al recibir un nuevo impacto, el destructor revela una celda ocupada del rival de su propietario
+- **Aplicacion:** Se utiliza la busqueda lineal para encontrar una celda y marcarla como detectada
+- **Repetidos:** Un disparo repetido no produce una nueva revelacion
+
+### Limite de ubicacion automatica
+
+- **Decision:** Se realizan como maximo 50 intentos de completar la flota
+- **Reinicio:** Cada intento comienza con un cubo nuevo
+- **Por que:** Evita que el programa siga intentando indefinidamente
+- **Error:** Si no se completa la flota, se informa el problema y se vuelve al menu
+
+### Pruebas de registro y flota
+
+- **Decision:** Se agregan pruebas en test/test_registro.py y test/test_flota.py
+- **Registro:** Se comprueban el historial, las jugadas, las estadisticas y el rechazo de un nombre invalido
+- **Flota:** Se comprueban ubicaciones validas, limites, largo, superposicion, contacto diagonal y restricciones por tipo de nave
+- **Herramientas:** Se utiliza assert para comprobar resultados y pytest.raises para las excepciones esperadas
+

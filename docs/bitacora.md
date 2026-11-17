@@ -41,3 +41,29 @@
 | `errores.py`             | PUEGHER       | Excepciones propias con clase base: `ErrorCubo`, `ErrorUbicacion`, `ErrorMunicion`, `ErrorJugada`                                    |
 | `partida.py` / `main.py` | PUEGHER       | Estado de la partida, turnos y victoria, partidas uno contra uno y contra la máquina, menús con diccionarios, captura de excepciones |
 | `docs/`                  | PUEGHER       | README actualizado y `decisiones.md` con las decisiones de diseño                                                                    |
+
+
+
+## Entrega 3
+
+**Integrador:** Jonathan Chambi
+
+| Modulo | Responsable/s | Que se hizo |
+| ------ | ------------- | ----------- |
+| registro.py | CHAMBI HUACA | Guardado y carga en JSON, listado de partidas, exportacion del resumen y ranking |
+| registro.py | CHAMBI HUACA | Validaciones basicas de los datos al cargar una partida |
+| partida.py | CHAMBI HUACA | Partida maquina contra maquina reutilizando los turnos existentes |
+| partida.py | CHAMBI HUACA | Continuar partidas, guardar y salir, conservar el nombre y confirmar antes de reemplazar |
+| partida.py | CHAMBI HUACA | Eleccion del tamano del cubo, con 8 como minimo y predeterminado |
+| partida.py | CHAMBI HUACA | Limite de intentos para completar la ubicacion automatica |
+| partida.py / flota.py | CHAMBI HUACA | Revelacion de una celda al impactar un destructor y municion extra al hundir la estacion orbital |
+| armamento.py | CHAMBI HUACA | Onda expansiva con propagacion recursiva |
+| test/test_registro.py | CHAMBI HUACA | Seis pruebas de historial, jugadas, estadisticas y nombre invalido |
+| test/test_flota.py | CHAMBI HUACA | Diez pruebas de ubicacion y restricciones de las naves |
+| docs/ | CHAMBI HUACA | Registro de los aportes y decisiones correspondientes |
+
+**Pruebas:**
+
+- Se agruparon los archivos de pruebas en la carpeta test
+- En la version revisada se ejecutaron 76 pruebas y todas pasaron
+- Ese resultado corresponde a los casos comprobados, no garantiza que todo el programa este libre de errores
