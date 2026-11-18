@@ -261,4 +261,3 @@ Desde la carpeta que contiene main.py, ejecutar:
 python -m pytest test -q
 ```
 
-Se agregaron pruebas de registro y de las reglas de ubicacion de la flota, junto con las pruebas de los otros integrantes
