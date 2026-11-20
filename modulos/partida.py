@@ -397,7 +397,7 @@ def _jugar_partida(estado: dict, confirmar: bool = True) -> None:
     while hay_ganador(estado) is None and not estado["salir"]:
         jugador = estado["jugadores"][estado["turno"]]
 
-        print(f"--- Turno de {jugador['nombre']} ---")
+        print(f"\n--- Turno de {jugador['nombre']} ---")
 
         # La maquina juega sola
         if jugador["es_maquina"]:
@@ -683,7 +683,7 @@ def _ubicacion_manual(lado: int) -> tuple[list, list]:
     # Repetir hasta que esten todas las naves ubicadas.
     while len(flota) < total:
         # Mostrar cuantas faltan de cada tipo.
-        print("--- Naves pendientes ---")
+        print("\n--- Naves pendientes ---")
 
         for modelo_nave in CATALOGO:
             faltan = modelo_nave[3] - cantidad_ubicada(flota, modelo_nave[0])
@@ -809,6 +809,7 @@ def _pedir_opcion(maximo: int) -> int:
 
             # El numero tiene que estar entre 1 y el maximo.
             if opcion >= 1 and opcion <= maximo:
+                print()  # Linea en blanco para separar el menu.
                 return opcion
 
         print("Opcion invalida.")
