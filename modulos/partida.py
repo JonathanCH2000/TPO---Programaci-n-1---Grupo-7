@@ -43,6 +43,10 @@ from modulos.tablero import (
     leer_celda,
 )
 
+# Con mas de 12, la maquina de nivel 2 tarda mucho y el dibujo deja de entrar en la terminal.
+TAMANO_MINIMO = 8
+TAMANO_MAXIMO = 12
+
 
 def menu_interactivo() -> None:
     """Muestra el menu principal hasta que se elige salir."""
@@ -69,28 +73,22 @@ def menu_interactivo() -> None:
 
 
 def _pedir_tamano() -> int:
-    """Permite elegir el lado del cubo. El minimo y el predeterminado son 8."""
+    """Pregunta si quiere elegir el tamano dentro del rango valido, usa el minimo por default."""
     print("Desea elegir el tamano del tablero?")
     print("1 - Si")
     print("2 - No")
 
     if _pedir_opcion(2) == 2:
-        return 8
+        return TAMANO_MINIMO
 
     while True:
-        texto = input("Tamano del tablero (minimo 8): ").strip()
-        if re.fullmatch(r"[0-9]+", texto):
-            try:
-                lado = int(texto)
-            except ValueError:
-                print("El numero ingresado es demasiado largo.")
-            else:
-                if lado >= 8:
-                    return lado
+        texto = input(f"Tamano del tablero ({TAMANO_MINIMO} a {TAMANO_MAXIMO}): ").strip()
 
-                print("El tamano minimo es 8.")
-        else:
-            print("Ingrese un numero entero.")
+        # Solo numeros y ademas, dentro de los limites.
+        if re.fullmatch(r"[0-9]+", texto) and TAMANO_MINIMO <= int(texto) <= TAMANO_MAXIMO:
+            return int(texto)
+
+        print(f"Ingrese un numero entre {TAMANO_MINIMO} y {TAMANO_MAXIMO}.")
 
 
 def _partida_1v1() -> None:
