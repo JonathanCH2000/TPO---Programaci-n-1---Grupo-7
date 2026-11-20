@@ -76,7 +76,8 @@ def test_naves_en_diagonal():
         ubicar_nave(cubo, flota, "F", (2, 2, 3), (2, 2, 4))
     assert len(flota) == 1
     assert leer_celda(cubo, (2, 2, 3)) == AGUA
-    
+
+
 def test_restriccion_submarino():
     """Comprueba que el submarino solo pueda ubicarse en la mitad inferior"""
     cubo = crear_cubo(8)
@@ -149,3 +150,4 @@ def test_restriccion_estacion_orbital():
     assert len(flota) == 1
     assert flota[0]["tipo"] == "E"
     assert len(flota[0]["puntos"]) == 8
+

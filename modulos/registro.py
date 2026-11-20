@@ -3,13 +3,21 @@ import re
 
 from modulos.errores import ErrorCubo
 
+
 def crear_historial() -> list:
     """Devuelve una lista vacia para guardar las jugadas de la partida."""
     return []
 
 
 def registrar_jugada(
-    historial: list, jugador: str, arma: str, punto: tuple, resultados: dict, eje: str | None = None, valor: int |None = None) -> list[dict]:
+    historial: list,
+    jugador: str,
+    arma: str,
+    punto: tuple,
+    resultados: dict,
+    eje: str | None = None,
+    valor: int | None = None,
+) -> list[dict]:
     """Recibe el historial, quien jugo, la letra del arma, el punto y el diccionario punto -> resultado que devolvio el arma.
     Agrega la jugada al final del historial y lo devuelve."""
     # El numero de turno es la cantidad de jugadas que ya hay mas 1.
@@ -22,9 +30,8 @@ def registrar_jugada(
         "arma": arma,
         "punto": punto,
         "eje": eje,
-        "valor":valor,
+        "valor": valor,
         "resultados": resultados,
-
     }
 
     # Agregar la jugada al final del historial.
@@ -129,13 +136,12 @@ def _leer_partidas() -> dict:
 
     return partidas
 
+
 def guardar_partida(estado: dict, nombre: str) -> None:
     """Guarda la partida.
     Lanza ErrorCubo si el nombre no es valido o no se puede guardar."""
     if re.fullmatch(r"[a-zA-Z0-9_-]{1,30}", nombre) is None:
-        raise ErrorCubo(
-            "Use de 1 a 30 letras sin acentos, numeros, guion o guion bajo."
-        )
+        raise ErrorCubo("Use de 1 a 30 letras sin acentos, numeros, guion o guion bajo.")
 
     partidas = _leer_partidas()
 
@@ -188,9 +194,7 @@ def guardar_partida(estado: dict, nombre: str) -> None:
         raise ErrorCubo("La partida contiene datos que no se pueden guardar.")
 
     except OSError:
-        raise ErrorCubo(
-            "No se pudo guardar. Compruebe que exista la carpeta datos."
-        )
+        raise ErrorCubo("No se pudo guardar. Compruebe que exista la carpeta datos.")
 
 
 def cargar_partida(nombre: str) -> dict:
@@ -229,7 +233,7 @@ def cargar_partida(nombre: str) -> dict:
                 raise ErrorCubo("La flota no es valida.")
             if len(jugador["cubo"]) == 0 or len(jugador["flota"]) == 0:
                 raise ErrorCubo("El cubo o la flota estan vacios.")
-            
+
             for nave in jugador["flota"]:
                 # Recupera el conjunto de puntos de la nave.
                 puntos = set()
@@ -258,6 +262,7 @@ def cargar_partida(nombre: str) -> dict:
         raise ErrorCubo("La partida tiene datos incompletos o invalidos.")
     return estado
 
+
 def listar_partidas() -> list[str]:
     """Devuelve los nombres de las partidas guardadas"""
     partidas = _leer_partidas()
@@ -265,6 +270,7 @@ def listar_partidas() -> list[str]:
     nombres.sort()
 
     return nombres
+
 
 def exportar_resumen(historial: list, jugadores: list[str], ganador: str | None) -> None:
     """Recibe el historial, los jugadores y el ganador.
@@ -277,10 +283,8 @@ def exportar_resumen(historial: list, jugadores: list[str], ganador: str | None)
             # Separa este resumen del siguiente.
             archivo.write("\n" + "-" * 40 + "\n\n")
     except OSError:
-        raise ErrorCubo(
-            "No se pudo exportar el resumen. Compruebe la carpeta datos."
-        )
-        
+        raise ErrorCubo("No se pudo exportar el resumen. Compruebe la carpeta datos.")
+
 
 def leer_ranking() -> list:
     """Devuelve los resultados ordenados por acierto y cantidad de jugadas.
@@ -298,9 +302,7 @@ def leer_ranking() -> list:
         raise ErrorCubo("El ranking debe contener una lista.")
     try:
         # Mayor cantidad de aciertosy hay En empate gana el que tenga menos jugadas.
-        ranking.sort(
-            key=lambda dato: (-dato["acierto"], dato["jugadas"])
-        )
+        ranking.sort(key=lambda dato: (-dato["acierto"], dato["jugadas"]))
     except (KeyError, TypeError):
         raise ErrorCubo("El ranking tiene datos incompletos o invalidos.")
     return ranking
@@ -330,6 +332,5 @@ def registrar_resultado(estado: dict) -> None:
         with open("datos/ranking.json", "w", encoding="utf-8") as archivo:
             json.dump(ranking, archivo, indent=4)
     except OSError:
-        raise ErrorCubo(
-            "No se pudo guardar el ranking. Compruebe la carpeta datos."
-        )
+        raise ErrorCubo("No se pudo guardar el ranking. Compruebe la carpeta datos.")
+

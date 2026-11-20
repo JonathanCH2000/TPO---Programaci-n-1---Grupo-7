@@ -18,16 +18,20 @@ def test_capas_recorre_una_capa_de_z_despues_de_la_otra():
 def test_espiral_pasa_una_vez_por_cada_celda():
     for lado in (1, 2, 3, 4, 5, 8):
         puntos = recorrido_espiral(crear_cubo(lado))
-        assert len(puntos) == lado ** 3
-        assert len(set(puntos)) == lado ** 3
+        assert len(puntos) == lado**3
+        assert len(set(puntos)) == lado**3
 
 
 def test_espiral_recorre_la_primera_capa_de_afuera_hacia_adentro():
     puntos = recorrido_espiral(crear_cubo(3))
     assert puntos[:9] == [
-        (1, 1, 1), (1, 2, 1), (1, 3, 1),
-        (1, 3, 2), (1, 3, 3),
-        (1, 2, 3), (1, 1, 3),
+        (1, 1, 1),
+        (1, 2, 1),
+        (1, 3, 1),
+        (1, 3, 2),
+        (1, 3, 3),
+        (1, 2, 3),
+        (1, 1, 3),
         (1, 1, 2),
         (1, 2, 2),
     ]

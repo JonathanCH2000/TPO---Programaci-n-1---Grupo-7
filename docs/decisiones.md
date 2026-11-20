@@ -239,4 +239,3 @@ jugador = {"nombre": "Jugador 1", "es_maquina": False, "cubo": ..., "flota": ...
 - **Registro:** Se comprueban el historial, las jugadas, las estadisticas y el rechazo de un nombre invalido
 - **Flota:** Se comprueban ubicaciones validas, limites, largo, superposicion, contacto diagonal y restricciones por tipo de nave
 - **Herramientas:** Se utiliza assert para comprobar resultados y pytest.raises para las excepciones esperadas
-

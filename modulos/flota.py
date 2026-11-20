@@ -29,9 +29,7 @@ PREMIOS_POR_HUNDIMIENTO = {
 }
 
 
-def ubicar_nave(
-    cubo: list, flota: list, tipo: str, desde: tuple, hasta: tuple
-) -> tuple[list, list]:
+def ubicar_nave(cubo: list, flota: list, tipo: str, desde: tuple, hasta: tuple) -> tuple[list, list]:
     """Recibe cubo, flota, tipo de nave y los extremos del tramo.
     Marca la nave en el cubo, la agrega a la flota y devuelve (cubo, flota).
     Lanza ErrorUbicacion si la nave no se puede ubicar en esa ubicacion."""
@@ -54,17 +52,13 @@ def ubicar_nave(
             raise ErrorUbicacion("La nave se sale del cubo.")
 
         if not _cumple_restriccion(cubo, tipo, punto):
-            raise ErrorUbicacion(
-                "La nave no cumple la restriccion de ubicacion de su tipo."
-            )
+            raise ErrorUbicacion("La nave no cumple la restriccion de ubicacion de su tipo.")
 
         if leer_celda(cubo, punto) != AGUA:
             raise ErrorUbicacion("La celda ya esta ocupada por otra nave.")
 
         if _hay_nave_cerca(cubo, punto):
-            raise ErrorUbicacion(
-                "Tiene que quedar al menos una celda libre con las otras naves."
-            )
+            raise ErrorUbicacion("Tiene que quedar al menos una celda libre con las otras naves.")
 
     for punto in puntos:
         # Escribir sobre las celdas correspondientes la ubicacion de la nave.
@@ -77,9 +71,7 @@ def ubicar_nave(
     return cubo, flota
 
 
-def ubicacion_automatica(
-    cubo: list, catalogo: list, semilla: int | None
-) -> list[dict] | None:
+def ubicacion_automatica(cubo: list, catalogo: list, semilla: int | None) -> list[dict] | None:
     """Ubica al azar todas las naves del catalogo respetando las reglas y devuelve la flota."""
     # Con la misma semilla siempre sale la misma flota. Con None sale una distinta cada vez.
     random.seed(semilla)
@@ -201,9 +193,7 @@ def flota_hundida(flota: list) -> bool:
     return True
 
 
-def _obtener_puntos(
-    tipo: str, desde: tuple, hasta: tuple
-) -> list[tuple[int, int, int]] | None:
+def _obtener_puntos(tipo: str, desde: tuple, hasta: tuple) -> list[tuple[int, int, int]] | None:
     """Obtiene los puntos de la nave seleccionada usando su tipo junto a las coordenadas desde x hasta y."""
     modelo_nave = datos_nave(tipo)
 

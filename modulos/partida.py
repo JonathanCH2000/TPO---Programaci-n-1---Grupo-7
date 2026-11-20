@@ -5,6 +5,8 @@ from modulos.armamento import crear_municion, disparar, usar_municion
 from modulos.errores import ErrorCubo, ErrorUbicacion
 from modulos.flota import (
     CATALOGO,
+    NAVES_QUE_REVELAN,
+    PREMIOS_POR_HUNDIMIENTO,
     buscar_nave,
     cantidad_ubicada,
     celda_destruida,
@@ -15,9 +17,8 @@ from modulos.flota import (
     nave_hundida,
     ubicacion_automatica,
     ubicar_nave,
-    NAVES_QUE_REVELAN,
-    PREMIOS_POR_HUNDIMIENTO,
 )
+from modulos.radar import busqueda_lineal, mapa_probabilidad, puntos_mas_probables
 from modulos.registro import (
     cargar_partida,
     crear_historial,
@@ -38,11 +39,9 @@ from modulos.tablero import (
     dibujar_capa,
     dibujar_plano_x,
     dibujar_plano_y,
-    leer_celda,
     escribir_celda,
+    leer_celda,
 )
-
-from modulos.radar import busqueda_lineal, mapa_probabilidad, puntos_mas_probables
 
 
 def menu_interactivo() -> None:
@@ -68,6 +67,7 @@ def menu_interactivo() -> None:
         except ErrorCubo as error:
             print(error)
 
+
 def _pedir_tamano() -> int:
     """Permite elegir el lado del cubo. El minimo y el predeterminado son 8."""
     print("Desea elegir el tamano del tablero?")
@@ -91,6 +91,7 @@ def _pedir_tamano() -> int:
                 print("El tamano minimo es 8.")
         else:
             print("Ingrese un numero entero.")
+
 
 def _partida_1v1() -> None:
     """Pide el tamanio y crea una partida uno contra uno"""
@@ -160,9 +161,7 @@ def nueva_partida_vs_maquina(configuracion: int = 8, dificultad: int = 1) -> dic
     return estado
 
 
-def nueva_partida_maquina_vs_maquina(
-    configuracion: int = 8, dificultades: tuple = (1, 1)
-) -> dict:
+def nueva_partida_maquina_vs_maquina(configuracion: int = 8, dificultades: tuple = (1, 1)) -> dict:
     """Recibe el lado del cubo y las dificultades de las dos maquinas"""
     # Cada maquina tiene su propio cubo, flota y municion.
     maquina_uno = _preparar_maquina(configuracion, dificultades[0])
@@ -197,20 +196,18 @@ def ejecutar_turno(estado: dict, jugada: dict) -> dict:
 
     # El disparo salio bien: recien ahora se guarda el gasto de municion.
     jugador["municion"] = municion
-    
+
     # Cada impacto nuevo en un destructor revela una celda del atacante.
     revelados = []
     for punto, resultado in resultados.items():
         if resultado in ("impacto", "hundido"):
             nave = buscar_nave(rival["flota"], punto)
             if nave is not None and nave["tipo"] in NAVES_QUE_REVELAN:
-                encontrado, metricas = busqueda_lineal(
-                    jugador["cubo"], NAVE
-                )
+                encontrado, metricas = busqueda_lineal(jugador["cubo"], NAVE)
                 if encontrado is not None:
                     escribir_celda(jugador["cubo"], encontrado, DETECTADO)
                     revelados.append(encontrado)
-                    
+
     # Entrega el premio solamente cuando la estacion orbital termina de hundirse.
     premios = []
     for punto, resultado in resultados.items():
@@ -230,10 +227,10 @@ def ejecutar_turno(estado: dict, jugada: dict) -> dict:
         jugada["eje"],
         jugada["valor"],
     )
-    
+
     # Guardar las celdas reveladas como efecto del destructor.
     estado["historial"][-1]["revelados"] = revelados
-    
+
     estado["historial"][-1]["premios"] = premios
 
     # Pasar el turno al otro jugador (0 -> 1 o 1 -> 0).
@@ -379,7 +376,7 @@ def _preparar_jugador(numero: int, lado: int) -> dict:
 
 def _jugar_partida(estado: dict, confirmar: bool = True) -> None:
     """Recibe el estado inicial; alterna los turnos hasta que haya un ganador."""
-    
+
     estado["salir"] = False
     # La consigna pide confirmar antes de empezar.
     if confirmar:
@@ -412,7 +409,7 @@ def _jugar_partida(estado: dict, confirmar: bool = True) -> None:
 
     estado["ganador"] = hay_ganador(estado)
     print(f"Gano {estado['ganador']}.")
-    
+
     # Registrar solamente las partidas que terminaron con un ganador.
     try:
         registrar_resultado(estado)
@@ -420,13 +417,13 @@ def _jugar_partida(estado: dict, confirmar: bool = True) -> None:
         print(error)
     else:
         print("Resultado agregado al ranking.")
-    
+
     nombres = []
 
     for jugador in estado["jugadores"]:
         nombres.append(jugador["nombre"])
     print(resumen(estado["historial"], nombres, estado["ganador"]))
-    #consulta para realizar la exportacion
+    # consulta para realizar la exportacion
     print("Desea exportar el resumen?")
     print("1 - Si")
     print("2 - No")
@@ -479,20 +476,14 @@ def _mostrar_resultados(rival: dict, jugada: dict) -> None:
             f"Sonar sobre el plano {jugada['eje']} = {jugada['valor']}. "
             f"{len(jugada['resultados'])} contactos detectados."
         )
-        
+
     # Informa al defensor las celdas que revelo su destructor.
     for punto in jugada.get("revelados", []):
-        print(
-            f"{rival['nombre']}: tu destructor revelo una celda del rival "
-            f"en {punto[0]},{punto[1]},{punto[2]}."
-        )
-        
+        print(f"{rival['nombre']}: tu destructor revelo una celda del rival en {punto[0]},{punto[1]},{punto[2]}.")
+
     # Informa la municion extra que recibio quien disparo.
     for arma, cantidad in jugada.get("premios", []):
-        print(
-            f"{jugada['jugador']} recibe {cantidad} de municion "
-            f"del arma {arma} por hundir la estacion orbital."
-        )
+        print(f"{jugada['jugador']} recibe {cantidad} de municion del arma {arma} por hundir la estacion orbital.")
 
 
 def _describir_nave(nave: dict) -> str:
@@ -579,6 +570,7 @@ def _turno_ver_cubo(estado: dict) -> None:
 
     _ver_cubo(cubo, mostrar_naves)
 
+
 def _guardar_y_salir(estado: dict) -> None:
     """Guarda la partida y vuelve al menu principal."""
     nombre = estado.get("nombre_partida", "")
@@ -601,6 +593,7 @@ def _guardar_y_salir(estado: dict) -> None:
         estado["nombre_partida"] = nombre
         estado["salir"] = True
         print(f"Partida guardada: {nombre}.")
+
 
 # Opcion del menu del turno -> funcion que la ejecuta.
 ACCIONES_TURNO = {
@@ -679,9 +672,7 @@ def _flota_automatica(lado: int) -> tuple[list, list]:
         if flota is not None:
             return cubo, flota
     # Se agotaron los intentos sin completar la flota.
-    raise ErrorUbicacion(
-        "No se pudo ubicar toda la flota. Intente iniciar otra partida."
-    )
+    raise ErrorUbicacion("No se pudo ubicar toda la flota. Intente iniciar otra partida.")
 
 
 def _ver_cubo(cubo: list, mostrar_naves: bool = True) -> None:
@@ -867,9 +858,11 @@ def _datos_sonar() -> dict:
     """Pide los datos del sonar: el eje del plano (z, x o y) y su valor."""
     return {"punto": None, "eje": _pedir_eje("zxy"), "valor": _pedir_valor()}
 
+
 def _datos_guiado() -> dict:
     """Pide los datos del torpedo guiado: ninguno, busca solo a partir de los impactos previos."""
     return {"punto": None, "eje": None, "valor": None}
+
 
 # Letra del arma -> funcion que pide sus datos. Las demas armas usan _datos_punto.
 DATOS_POR_ARMA = {
@@ -877,6 +870,7 @@ DATOS_POR_ARMA = {
     "S": _datos_sonar,
     "G": _datos_guiado,
 }
+
 
 def _mostrar_ranking() -> None:
     """Muestra los resultados guardados, ordenados por rendimiento."""
@@ -893,16 +887,14 @@ def _mostrar_ranking() -> None:
 
     for posicion in range(len(ranking)):
         resultado = ranking[posicion]
-        print(
-            f"{posicion + 1} - Partida {resultado['partida']} "
-            f"- Ganador: {resultado['ganador']}"
-        )
+        print(f"{posicion + 1} - Partida {resultado['partida']} - Ganador: {resultado['ganador']}")
         print(
             f"Acierto: {resultado['acierto']} % "
             f"- Jugadas del ganador: {resultado['jugadas']} "
             f"- Turnos totales: {resultado['turnos']}"
         )
         print()
+
 
 # Opcion del menu principal -> funcion que la ejecuta. La 5 (salir) corta el menu.
 OPCIONES_MENU = {

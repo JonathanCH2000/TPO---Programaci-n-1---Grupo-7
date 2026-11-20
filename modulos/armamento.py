@@ -62,9 +62,7 @@ def usar_municion(municion: dict, letra: str) -> dict[str, int | str]:
     return municion
 
 
-def torpedo(
-    cubo: list, flota: list, punto: tuple
-) -> dict[tuple[int, int, int], str] | None:
+def torpedo(cubo: list, flota: list, punto: tuple) -> dict[tuple[int, int, int], str] | None:
     """Recibe el cubo, la flota del rival y un punto; dispara solo a esa celda.
     Devuelve un diccionario punto -> resultado."""
     # El punto apuntado esta fuera del cubo.
@@ -75,9 +73,7 @@ def torpedo(
     return {punto: _disparar_celda(cubo, flota, punto)}
 
 
-def misil_racimo(
-    cubo: list, flota: list, punto: tuple
-) -> dict[tuple[int, int, int], str] | None:
+def misil_racimo(cubo: list, flota: list, punto: tuple) -> dict[tuple[int, int, int], str] | None:
     """Recibe el cubo, la flota del rival y un punto; dispara a la celda y
     a sus seis vecinos ortogonales. Devuelve un diccionario punto -> resultado."""
     # El punto esta fuera del cubo.
@@ -95,9 +91,7 @@ def misil_racimo(
     return resultados
 
 
-def carga_profundidad(
-    cubo: list, flota: list, punto: tuple
-) -> dict[tuple[int, int, int], str] | None:
+def carga_profundidad(cubo: list, flota: list, punto: tuple) -> dict[tuple[int, int, int], str] | None:
     """Recibe el cubo, la flota del rival y un punto; dispara a toda la recta sobre
     el eje z que pasa por ese punto. Devuelve un diccionario punto -> resultado."""
     # El punto esta fuera del cubo.
@@ -116,9 +110,7 @@ def carga_profundidad(
     return resultados
 
 
-def barrido_laser(
-    cubo: list, flota: list, punto: tuple, eje: str
-) -> dict[tuple[int, int, int], str] | None:
+def barrido_laser(cubo: list, flota: list, punto: tuple, eje: str) -> dict[tuple[int, int, int], str] | None:
     """Recibe el cubo, la flota del rival, un punto y un eje ("x" o "y"); dispara a toda
     la recta sobre ese eje que pasa por el punto. Devuelve un diccionario punto -> resultado."""
     # Posicion de cada eje dentro del punto (z, x, y).
@@ -146,6 +138,7 @@ def barrido_laser(
 
     return resultados
 
+
 def onda_expansiva(cubo: list, flota: list, punto: tuple) -> dict | None:
     """Recibe el cubo, la flota y el punto inicial.
     Devuelve los resultados de una onda de radio 2, o None si el punto no es valido."""
@@ -158,8 +151,7 @@ def onda_expansiva(cubo: list, flota: list, punto: tuple) -> dict | None:
     return resultados
 
 
-def _propagar_onda(
-    cubo: list, flota: list, punto: tuple, radio: int, resultados: dict) -> None:
+def _propagar_onda(cubo: list, flota: list, punto: tuple, radio: int, resultados: dict) -> None:
     """Dispara una vez por celda y continua por los vecinos.
     La propagacion termina cuando el radio llega a cero."""
     # Una celda puede alcanzarse por distintos caminos.
@@ -171,6 +163,7 @@ def _propagar_onda(
     # Caso recursivo: avanzar a los vecinos con un paso menos disponible.
     for vecino in puntos_vecinos(cubo, punto):
         _propagar_onda(cubo, flota, vecino, radio - 1, resultados)
+
 
 def torpedo_guiado(cubo: list, flota: list) -> dict[tuple[int, int, int], str]:
     """Recibe el cubo y la flota del rival; busca una nave averiada que todavia no este
@@ -191,9 +184,8 @@ def torpedo_guiado(cubo: list, flota: list) -> dict[tuple[int, int, int], str]:
 
     raise ErrorJugada("No hay un impacto previo sobre una nave que no este hundida.")
 
-def _buscar_contigua(
-    cubo: list, nave: dict, punto: tuple, visitados: set
-) -> tuple[int, int, int] | None:
+
+def _buscar_contigua(cubo: list, nave: dict, punto: tuple, visitados: set) -> tuple[int, int, int] | None:
     """Recibe el cubo, una nave, un punto de esa nave y el conjunto de puntos ya revisados;
     busca de forma recursiva una celda contigua de la nave que todavia no este destruida.
     Devuelve ese punto, o None si no encuentra ninguna."""
@@ -217,6 +209,7 @@ def _buscar_contigua(
 
     # Ningun vecino sirvio: esta rama no encontro nada.
     return None
+
 
 def disparar(cubo: list, flota: list, jugada: dict) -> dict[tuple[int, int, int], str]:
     """Recibe el cubo y la flota del rival y una jugada (arma, punto, eje y valor);
@@ -251,9 +244,11 @@ def _usar_carga(cubo: list, flota: list, jugada: dict) -> dict | None:
     """Usa la carga de profundidad sobre el punto de la jugada."""
     return carga_profundidad(cubo, flota, jugada["punto"])
 
+
 def _usar_onda(cubo: list, flota: list, jugada: dict) -> dict | None:
     """Usa la onda expansiva desde el punto de la jugada."""
     return onda_expansiva(cubo, flota, jugada["punto"])
+
 
 def _usar_laser(cubo: list, flota: list, jugada: dict) -> dict | None:
     """Usa el barrido laser sobre el punto y el eje de la jugada."""
@@ -279,9 +274,11 @@ def _usar_sonar(cubo: list, flota: list, jugada: dict) -> dict | None:
 # Letra del arma -> funcion que la usa. La onda expansiva (O) y el torpedo guiado (G)
 # se agregan en la entrega 3.
 
+
 def _usar_guiado(cubo: list, flota: list, jugada: dict) -> dict | None:
     """Usa el torpedo guiado. No necesita punto: busca solo a partir de los impactos previos."""
     return torpedo_guiado(cubo, flota)
+
 
 ARMAS = {
     "T": _usar_torpedo,
