@@ -18,7 +18,13 @@ from modulos.flota import (
     ubicacion_automatica,
     ubicar_nave,
 )
-from modulos.radar import busqueda_lineal, mapa_probabilidad, puntos_mas_probables
+from modulos.radar import (
+    busqueda_lineal,
+    mapa_probabilidad,
+    puntos_mas_probables,
+    recorrido_octantes,
+    recorrido_propagacion,
+)
 from modulos.registro import (
     cargar_partida,
     crear_historial,
@@ -33,6 +39,7 @@ from modulos.registro import (
 from modulos.tablero import (
     AGUA,
     DETECTADO,
+    HUNDIDO,
     IMPACTO,
     NAVE,
     crear_cubo,
@@ -41,11 +48,16 @@ from modulos.tablero import (
     dibujar_plano_y,
     escribir_celda,
     leer_celda,
+    recorrido_capas,
+    recorrido_espiral,
 )
 
 # Con mas de 12, la maquina de nivel 2 tarda mucho y el dibujo deja de entrar en la terminal.
 TAMANO_MINIMO = 8
 TAMANO_MAXIMO = 12
+
+# Cuantas celdas de un recorrido se muestran en pantalla.
+CELDAS_A_MOSTRAR = 32
 
 
 def menu_interactivo() -> None:
@@ -395,7 +407,8 @@ def _jugar_partida(estado: dict, confirmar: bool = True) -> None:
         print("1 - Disparar")
         print("2 - Ver el cubo")
         print("3 - Guardar y salir")
-        opcion = _pedir_opcion(3)
+        print("4 - Recorrer el cubo")
+        opcion = _pedir_opcion(4)
 
         # Buscar la accion elegida en el diccionario y ejecutarla.
         accion = ACCIONES_TURNO[opcion]
@@ -593,11 +606,65 @@ def _guardar_y_salir(estado: dict) -> None:
         print(f"Partida guardada: {nombre}.")
 
 
+def _turno_recorrer(estado: dict) -> None:
+    """Muestra las celdas del cubo del rival en el orden del recorrido que elija el jugador."""
+    rival = estado["jugadores"][1 - estado["turno"]]
+
+    print("1 - Por capas de z")
+    print("2 - En espiral")
+    print("3 - Por octantes (recursivo)")
+    print("4 - Desde un impacto (recursivo)")
+    nombre, recorrer = RECORRIDOS[_pedir_opcion(4)]
+
+    _mostrar_recorrido(nombre, recorrer(rival["cubo"]))
+
+
+def _recorrido_desde_impacto(cubo: list) -> list[tuple[int, int, int]]:
+    """Pide un punto y devuelve celdas afectadas, se propaga, devuelve lista vacia si no sirve."""
+    puntos = recorrido_propagacion(cubo, _pedir_punto(), (IMPACTO, HUNDIDO))
+
+    # El punto esta fuera del cubo.
+    if puntos is None:
+        return []
+
+    return puntos
+
+
+def _mostrar_recorrido(nombre: str, puntos: list[tuple[int, int, int]]) -> None:
+    """Muestra cuantas celdas visita el recorrido."""
+    print(f"Recorrido {nombre}: {len(puntos)} celdas.")
+
+    primeros = puntos[:CELDAS_A_MOSTRAR]
+
+    # Armar cada fila con 8 puntos.
+    for inicio in range(0, len(primeros), 8):
+        fila = []
+
+        for z, x, y in primeros[inicio : inicio + 8]:
+            fila.append(f"{z},{x},{y}")
+
+        print(" ".join(fila))
+
+    # Avisar cuantas celdas quedaron sin mostrar.
+    if len(puntos) > CELDAS_A_MOSTRAR:
+        print(f"... y {len(puntos) - CELDAS_A_MOSTRAR} celdas mas.")
+
+
+# Opcion del submenu de recorridos -> (nombre, fn que recibe el cubo, devuelve sus puntos en orden).
+RECORRIDOS = {
+    1: ("por capas de z", recorrido_capas),
+    2: ("en espiral", recorrido_espiral),
+    3: ("por octantes", recorrido_octantes),
+    4: ("desde un impacto", _recorrido_desde_impacto),
+}
+
+
 # Opcion del menu del turno -> funcion que la ejecuta.
 ACCIONES_TURNO = {
     1: _turno_disparar,
     2: _turno_ver_cubo,
     3: _guardar_y_salir,
+    4: _turno_recorrer,
 }
 
 
