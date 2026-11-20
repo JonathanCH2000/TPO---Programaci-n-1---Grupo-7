@@ -7,6 +7,8 @@ def main() -> None:
         menu_interactivo()
     except (KeyboardInterrupt, EOFError):
         print("\nJuego cerrado.")
+    finally:
+        print("Gracias por jugar a Operacion Cubo.")
 
 
 if __name__ == "__main__":
