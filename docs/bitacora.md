@@ -44,25 +44,20 @@
 
 ## Entrega 3
 
-**Integrador:** Jonathan Chambi
+**Integrador:** CHAMBI HUACA JONATHAN AGUSTIN
 
-| Modulo                | Responsable/s | Que se hizo                                                                                      |
-| --------------------- | ------------- | ------------------------------------------------------------------------------------------------ |
-| registro.py           | CHAMBI HUACA  | Guardado y carga en JSON, listado de partidas, exportacion del resumen y ranking                 |
-| registro.py           | CHAMBI HUACA  | Validaciones basicas de los datos al cargar una partida                                          |
-| partida.py            | CHAMBI HUACA  | Partida maquina contra maquina reutilizando los turnos existentes                                |
-| partida.py            | CHAMBI HUACA  | Continuar partidas, guardar y salir, conservar el nombre y confirmar antes de reemplazar         |
-| partida.py            | CHAMBI HUACA  | Eleccion del tamano del cubo, con 8 como minimo y predeterminado                                 |
-| partida.py            | CHAMBI HUACA  | Limite de intentos para completar la ubicacion automatica                                        |
-| partida.py / flota.py | CHAMBI HUACA  | Revelacion de una celda al impactar un destructor y municion extra al hundir la estacion orbital |
-| armamento.py          | CHAMBI HUACA  | Onda expansiva con propagacion recursiva                                                         |
-| test/test_registro.py | CHAMBI HUACA  | Seis pruebas de historial, jugadas, estadisticas y nombre invalido                               |
-| test/test_flota.py    | CHAMBI HUACA  | Diez pruebas de ubicacion y restricciones de las naves                                           |
-| docs/                 | CHAMBI HUACA  | Registro de los aportes y decisiones correspondientes                                            |
+| Módulo                   | Responsable/s               | Qué se hizo                                                                                                                                                          |
+| ------------------------ | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `tablero.py`             | PEÑA                        | Recorridos por capas de z y en espiral                                                                                                                               |
+| `flota.py`               | CHAMBI HUACA                | Datos de las naves que revelan una celda (destructor) y del premio por hundimiento (estación orbital)                                                                |
+| `radar.py`               | PEÑA                        | Búsqueda recursiva (divide y vencerás) con métricas, mapa de probabilidad, recorridos recursivos por octantes y por propagación                                      |
+| `armamento.py`           | CHAMBI HUACA, PEÑA          | Onda expansiva con propagación recursiva (CHAMBI HUACA) y torpedo guiado con búsqueda recursiva (PEÑA)                                                               |
+| `registro.py`            | CHAMBI HUACA                | Guardado y carga en JSON con validación de los datos, listado de partidas, exportación del resumen y ranking                                                         |
+| `partida.py` / `main.py` | CHAMBI HUACA, PEÑA, PUEGHER | Máquina contra máquina, continuar una partida, guardar y salir (CHAMBI HUACA); máquina con dos niveles (PEÑA); menú de recorridos y tamaño máximo del cubo (PUEGHER) |
+| `test/`                  | CHAMBI HUACA, PEÑA          | Pruebas de flota y registro (CHAMBI HUACA); de radar, recorridos del tablero, torpedo guiado y niveles de la máquina (PEÑA)                                          |
+| `docs/`                  | CHAMBI HUACA, PUEGHER       | README y decisiones (CHAMBI HUACA); `requirements.txt`, revisión del README, la bitácora y las decisiones, limpieza de `datos/` (PUEGHER)                            |
 
 **Pruebas:**
 
-- Se agruparon los archivos de pruebas en la carpeta test
-- En la version revisada se ejecutaron 76 pruebas y todas pasaron
-- Ese resultado corresponde a los casos comprobados, no garantiza que todo el programa este libre de errores
-
+- Las pruebas están en la carpeta `test/` y se corren con `python -m pytest test -q`.
+- Hay 76 pruebas y todas pasan.
