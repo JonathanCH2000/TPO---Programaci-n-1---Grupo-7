@@ -180,6 +180,7 @@ jugador = {"nombre": "Jugador 1", "es_maquina": False, "cubo": ..., "flota": ...
 - **Decision:** Antes de iniciar una partida se permite elegir el lado del cubo
 - **Predeterminado:** Si no se elige otro tamano, se utiliza 8
 - **Minimo:** El grupo establece 8 como minimo para conservar el tamano base del juego
+- **Máximo:** 12. Con lado 12, una partida entre dos máquinas de nivel 2 tarda 26 segundos; con 15, 81 segundos. Además, con más de 12 el dibujo no entra en la terminal, y sin máximo un número enorme hacía que el programa se quedara sin memoria.
 - **Aplicacion:** Se utiliza en los tres modos de partida. Al continuar una partida se conserva el tamano guardado
 
 ### Guardado y carga de partidas
@@ -240,3 +241,12 @@ jugador = {"nombre": "Jugador 1", "es_maquina": False, "cubo": ..., "flota": ...
 - **Flota:** Se comprueban ubicaciones validas, limites, largo, superposicion, contacto diagonal y restricciones por tipo de nave
 - **Herramientas:** Se utiliza assert para comprobar resultados y pytest.raises para las excepciones esperadas
 
+### Menú de recorridos
+
+- **Decisión:** Los recorridos se eligen desde la opción 4 del menú del turno, con un diccionario opción → (nombre, función). Hay cuatro: por capas de z, en espiral, por octantes (recursivo) y desde un impacto (recursivo). Se muestran la cantidad de celdas y las primeras 32 en orden.
+- **Por qué en el turno:** El recorrido desde un impacto necesita una partida en juego. Solo pasa por celdas con impacto o hundidas, así que no revela naves ocultas.
+
+### Cerrar el juego con Ctrl+C
+
+- **Decisión:** `main.py` ataja `KeyboardInterrupt` y `EOFError` y muestra "Juego cerrado.".
+- **Por qué:** La consigna pide que el programa nunca se corte por una excepción no capturada.

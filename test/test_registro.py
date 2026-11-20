@@ -47,12 +47,8 @@ def test_ultima_jugada():
     """Comprueba que se devuelva la ultima jugada registrada"""
     historial = crear_historial()
 
-    registrar_jugada(
-        historial, "Jugador 1", "T", (1, 1, 1), {(1, 1, 1): "agua"}
-    )
-    registrar_jugada(
-        historial, "Jugador 2", "T", (2, 2, 2), {(2, 2, 2): "impacto"}
-    )
+    registrar_jugada(historial, "Jugador 1", "T", (1, 1, 1), {(1, 1, 1): "agua"})
+    registrar_jugada(historial, "Jugador 2", "T", (2, 2, 2), {(2, 2, 2): "impacto"})
 
     jugada = ultima_jugada(historial)
 
@@ -64,15 +60,9 @@ def test_estadisticas():
     """Comprueba las cantidades y el acierto del jugador elegido"""
     historial = crear_historial()
 
-    registrar_jugada(
-        historial, "Jugador 1", "T", (1, 1, 1), {(1, 1, 1): "agua"}
-    )
-    registrar_jugada(
-        historial, "Jugador 1", "T", (2, 2, 2), {(2, 2, 2): "impacto"}
-    )
-    registrar_jugada(
-        historial, "Jugador 2", "T", (3, 3, 3), {(3, 3, 3): "agua"}
-    )
+    registrar_jugada(historial, "Jugador 1", "T", (1, 1, 1), {(1, 1, 1): "agua"})
+    registrar_jugada(historial, "Jugador 1", "T", (2, 2, 2), {(2, 2, 2): "impacto"})
+    registrar_jugada(historial, "Jugador 2", "T", (3, 3, 3), {(3, 3, 3): "agua"})
 
     datos = estadisticas(historial, "Jugador 1")
 
@@ -88,3 +78,4 @@ def test_nombre_invalido():
     # El nombre se rechaza antes de escribir el archivo
     with pytest.raises(ErrorCubo):
         guardar_partida({}, "nombre con espacios")
+

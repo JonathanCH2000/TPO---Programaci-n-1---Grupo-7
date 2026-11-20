@@ -3,7 +3,7 @@ import pytest
 from modulos.armamento import ARMAS, crear_municion, disparar, torpedo, torpedo_guiado, usar_municion
 from modulos.errores import ErrorJugada, ErrorMunicion
 from modulos.flota import crear_flota, ubicar_nave
-from modulos.tablero import IMPACTO, HUNDIDO, NAVE, crear_cubo, leer_celda
+from modulos.tablero import HUNDIDO, IMPACTO, NAVE, crear_cubo, leer_celda
 
 
 def armar(tipo, desde, hasta):

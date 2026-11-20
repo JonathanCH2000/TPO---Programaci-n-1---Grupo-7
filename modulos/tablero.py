@@ -76,9 +76,7 @@ def contar_celdas(cubo: list, estado: int) -> int:
     return cantidad
 
 
-def puntos_vecinos(
-    cubo: list, punto: tuple, diagonales: bool = False
-) -> list[tuple[int, int, int]]:
+def puntos_vecinos(cubo: list, punto: tuple, diagonales: bool = False) -> list[tuple[int, int, int]]:
     """Recibe cubo, punto y si se cuentan las diagonales; devuelve los puntos vecinos dentro del cubo."""
     z, x, y = punto
     vecinos = []
@@ -204,9 +202,7 @@ def dibujar_plano_y(cubo: list, y: int, mostrar_naves: bool = False) -> str | No
     return _dibujar_plano(plano, f"PLANO y = {y}", "z", "x", mostrar_naves)
 
 
-def _dibujar_plano(
-    plano: list, titulo: str, eje_columnas: str, eje_filas: str, mostrar_naves: bool
-) -> str:
+def _dibujar_plano(plano: list, titulo: str, eje_columnas: str, eje_filas: str, mostrar_naves: bool) -> str:
     """Recibe un plano [columna][fila], su titulo y los nombres de sus ejes; devuelve su dibujo."""
     # Simbolo de cada estado, en el mismo orden que sus numeros (AGUA = 0, NAVE = 1, etc).
     signos = ["~", "N", "o", "X", "#", "?"]
@@ -268,6 +264,7 @@ def recorrido_capas(cubo: list) -> list[tuple[int, int, int]]:
                 puntos.append((z, x, y))
 
     return puntos
+
 
 def recorrido_espiral(cubo: list) -> list[tuple[int, int, int]]:
     """Recibe el cubo; devuelve todos sus puntos recorriendo cada capa de z en espiral

@@ -26,6 +26,7 @@ BUSQUEDAS = [busqueda_lineal, busqueda_optimizada, busqueda_recursiva]
 
 # ---------- Las tres busquedas ----------
 
+
 def test_las_tres_encuentran_la_nave():
     for buscar in BUSQUEDAS:
         cubo = crear_cubo(8)
@@ -66,6 +67,7 @@ def test_las_tres_funcionan_con_cubos_de_otros_lados():
 
 # ---------- Lineal ----------
 
+
 def test_lineal_sin_resultado_compara_todas_las_celdas():
     punto, metricas = busqueda_lineal(crear_cubo(8), NAVE)
     assert metricas["comparaciones"] == 8 * 8 * 8
@@ -93,6 +95,7 @@ def test_lineal_no_es_recursiva():
 
 # ---------- Optimizada ----------
 
+
 def test_optimizada_encuentra_una_nave_de_dos_celdas_revisando_pocas_celdas():
     cubo = crear_cubo(8)
     escribir_celda(cubo, (8, 8, 7), NAVE)
@@ -103,6 +106,7 @@ def test_optimizada_encuentra_una_nave_de_dos_celdas_revisando_pocas_celdas():
 
 
 # ---------- Recursiva ----------
+
 
 def test_recursiva_devuelve_el_mismo_punto_que_la_lineal():
     for punto_nave in [(1, 1, 1), (1, 8, 8), (4, 4, 5), (5, 6, 7), (8, 1, 1), (8, 8, 8)]:
@@ -149,6 +153,7 @@ def test_recursiva_no_modifica_el_cubo():
 
 # ---------- Sonar ----------
 
+
 def test_sonar_detecta_solo_las_naves_del_plano():
     cubo = crear_cubo(5)
     escribir_celda(cubo, (3, 1, 1), NAVE)
@@ -166,6 +171,7 @@ def test_sonar_con_eje_o_valor_invalido_devuelve_none():
 
 
 # ---------- Mapa de probabilidad ----------
+
 
 def test_mapa_no_incluye_celdas_ya_disparadas():
     cubo = crear_cubo(4)
@@ -232,6 +238,7 @@ def test_puntos_mas_probables_con_mapa_vacio():
 
 # ---------- Recorridos recursivos ----------
 
+
 def test_octantes_pasa_una_vez_por_cada_celda():
     cubo = crear_cubo(4)
     puntos = recorrido_octantes(cubo)
@@ -249,8 +256,8 @@ def test_octantes_con_lados_impares_y_chicos():
     for lado in (1, 2, 3, 5):
         cubo = crear_cubo(lado)
         puntos = recorrido_octantes(cubo)
-        assert len(puntos) == lado ** 3
-        assert len(set(puntos)) == lado ** 3
+        assert len(puntos) == lado**3
+        assert len(set(puntos)) == lado**3
 
 
 def test_octantes_con_cubo_vacio():

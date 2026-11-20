@@ -25,9 +25,7 @@ NO_PASABLES = (AGUA_MARCADA, HUNDIDO)
 PESO_PISTA = 10
 
 
-def busqueda_lineal(
-    cubo: list, estado: int
-) -> tuple[tuple[int, int, int] | None, dict]:
+def busqueda_lineal(cubo: list, estado: int) -> tuple[tuple[int, int, int] | None, dict]:
     """Localiza la primera celda del cubo que tiene un estado recorriendolo con ciclos for (z, x, y).
     Devuelve el punto encontrado (o None si no hay ninguno) y las metricas de la busqueda."""
     comparaciones = 0
@@ -51,9 +49,7 @@ def busqueda_lineal(
     return None, _armar_metricas(comparaciones, inicio)
 
 
-def busqueda_optimizada(
-    cubo: list, estado: int
-) -> tuple[tuple[int, int, int] | None, dict]:
+def busqueda_optimizada(cubo: list, estado: int) -> tuple[tuple[int, int, int] | None, dict]:
     """Localiza una celda del cubo que tiene un estado recorriendolo como un damero:
     Primero las celdas con (z + x + y) par y despues las impares.
     Devuelve el punto encontrado (o None si no hay ninguno) y las metricas de la busqueda."""
@@ -87,9 +83,7 @@ def busqueda_optimizada(
     return None, _armar_metricas(comparaciones, inicio)
 
 
-def busqueda_recursiva(
-    cubo: list, estado: int
-) -> tuple[tuple[int, int, int] | None, dict]:
+def busqueda_recursiva(cubo: list, estado: int) -> tuple[tuple[int, int, int] | None, dict]:
     """Localiza la primera celda del cubo que tiene un estado dividiendo el cubo en mitades
     (divide y venceras): busca en la primera mitad y, si no esta, en la segunda.
     Devuelve el punto encontrado (o None si no hay ninguno) y las metricas de la busqueda;
@@ -105,13 +99,9 @@ def busqueda_recursiva(
 
     # Un cubo sin celdas no tiene nada que buscar.
     if lado > 0:
-        punto = _buscar_en_region(
-            cubo, estado, (1, lado), (1, lado), (1, lado), 1, seguimiento
-        )
+        punto = _buscar_en_region(cubo, estado, (1, lado), (1, lado), (1, lado), 1, seguimiento)
 
-    metricas = _armar_metricas(
-        seguimiento["comparaciones"], inicio, seguimiento["profundidad_max"]
-    )
+    metricas = _armar_metricas(seguimiento["comparaciones"], inicio, seguimiento["profundidad_max"])
 
     return punto, metricas
 
@@ -160,16 +150,12 @@ def _buscar_en_region(
         segunda = (rango_z, rango_x, (medio + 1, y_hasta))
 
     # Buscar en la primera mitad; si esta ahi, no hace falta mirar la segunda.
-    encontrado = _buscar_en_region(
-        cubo, estado, primera[0], primera[1], primera[2], nivel + 1, seguimiento
-    )
+    encontrado = _buscar_en_region(cubo, estado, primera[0], primera[1], primera[2], nivel + 1, seguimiento)
 
     if encontrado is not None:
         return encontrado
 
-    return _buscar_en_region(
-        cubo, estado, segunda[0], segunda[1], segunda[2], nivel + 1, seguimiento
-    )
+    return _buscar_en_region(cubo, estado, segunda[0], segunda[1], segunda[2], nivel + 1, seguimiento)
 
 
 def sonar(cubo: list, eje: str, valor: int) -> list[tuple[int, int, int]] | None:
@@ -192,9 +178,7 @@ def sonar(cubo: list, eje: str, valor: int) -> list[tuple[int, int, int]] | None
     return detectados
 
 
-def mapa_probabilidad(
-    cubo: list, largos: list[int]
-) -> dict[tuple[int, int, int], int]:
+def mapa_probabilidad(cubo: list, largos: list[int]) -> dict[tuple[int, int, int], int]:
     """Recibe el cubo del rival y los largos de las naves que siguen a flote; devuelve un
     diccionario punto -> puntaje con cada celda a la que todavia se puede disparar.
     Se prueba cada forma posible de ubicar cada nave en linea recta. Cada forma suma 1 a sus
@@ -237,9 +221,7 @@ def mapa_probabilidad(
     return mapa
 
 
-def _forma_en_linea(
-    cubo: list, inicio: tuple, eje: int, largo: int
-) -> list[tuple[int, int, int]] | None:
+def _forma_en_linea(cubo: list, inicio: tuple, eje: int, largo: int) -> list[tuple[int, int, int]] | None:
     """Recibe el cubo, el punto donde empieza una nave, el eje (0 = z, 1 = x, 2 = y) y su largo.
     Devuelve los puntos que ocuparia, o None si no entra o pasa por una celda donde no puede haber nave."""
     forma = []
@@ -285,9 +267,7 @@ def recorrido_octantes(cubo: list) -> list[tuple[int, int, int]]:
     return puntos
 
 
-def _recorrer_octantes(
-    rango_z: tuple, rango_x: tuple, rango_y: tuple, puntos: list
-) -> None:
+def _recorrer_octantes(rango_z: tuple, rango_x: tuple, rango_y: tuple, puntos: list) -> None:
     """Agrega a puntos las celdas de la region que forman los tres rangos (desde, hasta)."""
     # Caso base: la region es una sola celda.
     if rango_z[0] == rango_z[1] and rango_x[0] == rango_x[1] and rango_y[0] == rango_y[1]:
@@ -313,9 +293,7 @@ def _partir(rango: tuple) -> list[tuple[int, int]]:
     return [(desde, medio), (medio + 1, hasta)]
 
 
-def recorrido_propagacion(
-    cubo: list, punto: tuple, estados: tuple = (IMPACTO,)
-) -> list[tuple[int, int, int]] | None:
+def recorrido_propagacion(cubo: list, punto: tuple, estados: tuple = (IMPACTO,)) -> list[tuple[int, int, int]] | None:
     """Recibe el cubo, un punto de partida y los estados por los que se puede propagar
     (por defecto, impactos). Devuelve los puntos alcanzados pasando de una celda a sus vecinos
     ortogonales de forma recursiva, o None si el punto esta fuera del cubo.
@@ -342,9 +320,7 @@ def _propagar(cubo: list, punto: tuple, estados: tuple, alcanzados: list) -> Non
         _propagar(cubo, vecino, estados, alcanzados)
 
 
-def _armar_metricas(
-    comparaciones: int, inicio: float, profundidad_max: int = 0
-) -> dict[str, int | float]:
+def _armar_metricas(comparaciones: int, inicio: float, profundidad_max: int = 0) -> dict[str, int | float]:
     """Arma el diccionario de metricas de una corrida de busqueda.
     La profundidad es 0 en las busquedas que no son recursivas."""
     # Calcular cuanto tardo la busqueda, pasado a milisegundos.

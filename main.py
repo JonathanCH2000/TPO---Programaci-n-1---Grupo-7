@@ -3,7 +3,12 @@ from modulos.partida import menu_interactivo
 
 def main() -> None:
     """Punto de partida del juego."""
-    menu_interactivo()
+    try:
+        menu_interactivo()
+    except (KeyboardInterrupt, EOFError):
+        print("\nJuego cerrado.")
+    finally:
+        print("Gracias por jugar a Operacion Cubo.")
 
 
 if __name__ == "__main__":
